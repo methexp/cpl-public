@@ -1,0 +1,162 @@
+---
+title: "Untitled"
+author: "Marius Barth"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+study_folder <- file.path(rprojroot::find_rstudio_root_file(), "studies", "cpl8")
+dir.create(file.path(study_folder, "experimental-software", "stimuli"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(study_folder, "experimental-software", "data", "demographics"), recursive = TRUE, showWarnings = FALSE)
+set.seed(digest::digest2int("cpl8"))
+```
+
+### Design
+
+- Factor A (Materials, option to skip to plan-based responding):
+  1) probabilistic materials with 60% regular transitions
+  2) blocked-deterministic materials one block with 100% regular transitions, one block with random transitions = .5 * 1 + 0.5 * .2 = .6 = 60%
+- Factor B (Instruction of explicit knowledge):
+  1) participants do not receive information about sequential structure
+  2) participants receive a-priori information about sequential structure:
+      1) Das Quadrat erscheint dabei nicht an einer zufälligen Position des Bildschirms, sondern folgt häufig einer Reihenfolge:
+        Wir werden dir im nächsten Schritt diese Reihenfolge verraten. Bitte nutze die Information über die Reihenfolge, um die Aufgabe möglichst gut zu bearbeiten.
+        Stellt man sich vor, dass die Positionen von links nach rechts nummeriert sind, folgen die Quadrate der Reihenfolge: 1-2-3-4-5-6.
+        Bitte drücke die Tasten in der Reihenfolge...
+        Die Quadrate folgen jedoch nicht immer der Reihenfolge:
+          - In 60% der Fälle wird das Quadrat an der richtigen Position erscheinen, in 40% an einer der anderen Positionen.
+          - Im ersten Block folgen die Quadrate der Reihenfolge, im zweiten Block werden sie zufällig erscheinen, im dritten Block folgen sie dann wieder der Reihenfolge, im vierten Block erscheinen sie wieder zufällig, usw.
+      
+
+
+### Materials
+
+## Materials
+
+```{r}
+n_participants <- 120L
+n_trials_per_block <- 144L
+n_blocks <- 14L
+n_trials <- n_trials_per_block * n_blocks
+
+
+# 50min * 60s/min = 3000s
+
+
+design_matrix <- expand.grid(
+  material = c("probabilistic", "mixed deterministic")
+  , material_order = c("regular first", "random first")
+  , instructions = c("sequence revealed", "sequence concealed")
+  , idx = seq_len(15L)
+)
+# 8 rows = complete design
+design_matrix <- design_matrix[
+  replicate(n = 15, expr = sample(1:8)) |> as.vector() + rep(0:14, each = 8) * 8
+  , # all columns
+]
+stopifnot(all(table(design_matrix) == 1))
+
+
+i <- 1L
+for (i in seq_len(nrow(design_matrix))) {
+  
+  sequence <- sample(1:6) # first-order sequence
+  
+  stimuli <- data.frame(
+    sid = i
+    , material = design_matrix$material[i]
+    , instructions = design_matrix$instructions[i]
+    , material_order = design_matrix$material_order[i]
+    , tid = seq_len(n_trials)
+    , block_scheme = NA_character_
+    , stimulus_location = NA_integer_
+  )
+  
+  if(design_matrix$material[i] == "probabilistic") {
+    p_regular <- 0.6
+    stimuli$block_scheme <- "regular"
+  } else {
+    p_regular <- 1.0
+    if(design_matrix$material_order[i] == "regular first") {
+      stimuli$block_scheme <- rep(c("regular", "random"), each = n_trials_per_block, length.out = n_trials)
+    } else {
+      stimuli$block_scheme <- rep(c("random", "regular"), each = n_trials_per_block, length.out = n_trials)
+    }
+  }
+  
+  transition_matrix <- matrix((1 - p_regular)/4, nrow = 6, ncol = 6)
+  diag(transition_matrix) <- 0 # no direct repetitions
+  for (k in seq_along(sequence)) {
+    transition_matrix[sequence[k], rep(sequence, 2)[k + 1]] <- p_regular
+  }
+  stopifnot(all(rowSums(transition_matrix) == 1))
+  stopifnot(all(colSums(transition_matrix) == 1))
+  random_matrix <- matrix(.2, nrow = 6, ncol = 6)
+  diag(random_matrix) <- 0
+  
+  stimuli$stimulus_location[1L] <- sample(1:6, size = 1L)
+  
+  for (t in 2:n_trials) {
+    if(stimuli$block_scheme[t] == "regular") {
+      stimuli$stimulus_location[t] <- sample(
+        1:6
+        , size = 1
+        , prob = transition_matrix[stimuli$stimulus_location[t-1], 1:6]
+      )
+      
+    } else if(stimuli$block_scheme[t] == "random") {
+      stimuli$stimulus_location[t] <- sample(
+        1:6
+        , size = 1
+        , prob = random_matrix[stimuli$stimulus_location[t-1], 1:6]
+      )
+    } else {
+      stop("'block_scheme' not properly defined")
+    }
+  }
+
+  stimuli$pos_x <- seq(-360, 360, 144)[stimuli$stimulus_location]
+  stimuli$response_deadline <- c(
+      rep(c(1.0, 0.9, 0.8, 0.7), each = 24)
+      , rep(0.6, times = n_trials - 4 * 24)
+    ) - 0.100 #
+  
+  write.csv(
+    stimuli
+    , file = file.path(study_folder, "experimental-software", "stimuli", paste0("acquisition-", i, ".csv"))
+    , row.names = FALSE
+  )
+  writeLines(
+    paste0(
+      "Das Quadrat erscheint dabei nicht an einer zufälligen Position des Bildschirms, sondern folgt meist einer Reihenfolge: "
+      , "Stellt man sich vor, dass die sechs Positionen auf dem Bildschirm von links nach rechts mit den Zahlen 1 bis 6 nummeriert sind, "
+      , "wird das Quadrat der folgenden Reihenfolge folgen:\n\n"
+      , paste(sequence, collapse = " – ") 
+      , ".\n\nBitte präge dir diese Reihenfolge gut ein und nutze dein Wissen über die Reihenfolge, um die Aufgabe möglichst gut zu bearbeiten.\n\n"
+      # , if(design_matrix$material[i] == "probabilistic") "Das Quadrat wird in 60% der Fälle der Reihenfolge folgen." else {
+      #   if(design_matrix$material_order[i] == "regular_first") {
+      #     "Das Quadrat wird in den Blöcken 1, 3, 5, 7, 9 und 11 der genannten Reihenfolge folgen. In den übrigen Blöcken wird es an einer zufälligen Position erscheinen."
+      #   } else {
+      #     "Das Quadrat wird in den Blöcken 2, 4, 8, 10 und 12 der genannten Reihenfolge folgen. In den übrigen Blöcken wird es an einer zufälligen Position erscheinen."
+      #   }
+      # 
+      # }
+      , "Auf dem folgenden Bildschirm kannst du dir die Reihenfolge auch noch einmal anschauen." 
+    )
+    , con = file.path(study_folder, "experimental-software", "stimuli", paste0("instructions-", i, ".txt"))
+  )
+  writeLines(
+    as.character(rep(sequence, 3L))
+    , con = file.path(study_folder, "experimental-software", "stimuli", paste0("sequence-", i, ".txt"))
+  )
+}
+```
+
+
+```{r}
+sessionInfo()
+```

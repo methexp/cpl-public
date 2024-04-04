@@ -1,0 +1,207 @@
+---
+title: "Model specification"
+author: "Marius Barth"
+output: html_document
+---
+
+# Model specification {#appendix-model-specification}
+
+<!--
+seven-parameter diffusion model
+with inter-trial variabilities for drift rate, starting point, and nondecision time.
+Intertrial variabilities varied by participant (except for beta)
+-->
+<!--
+- $n$ trials
+- $i$ participants
+- $j$ stimulus location
+- $k$ regular/nonregular/deterministic
+- $l$ response location
+- $b$ block pair
+- $m$ function index
+-->
+
+We implemented the drift-diffusion model in JAGS [@plummer_jags_2003].
+Response times and accuracy on each trial $n$ were modeled as coming from a Wiener distribution with
+the models' *core* parameters
+boundary separation $\alpha_{ik^*b}$, starting point $\beta_n$, drift rate $\delta_n$ and nondecision time $\tau_n$
+
+$$y_n \sim \mathcal{W} \left(\alpha_{ik^*b}, \beta_n, \delta_n, \tau_n \right)$$
+
+Boundary separation is assumed to vary by
+participant $i$
+and block pair $b$.
+For mixed-deterministic materials, it also varies by condition $k^*$, denoting deterministic vs. random blocks.
+
+$$\alpha_{ik^*b} = \zeta^{(\alpha)}_{ik^*b}$$
+
+The other core parameter are assumed to vary by trial,
+and are assumed to come from truncated normal distributions with standard deviations $s_i$.
+
+$$\beta_n \sim \mathrm{N}_{.01}^{.99} \left( \zeta^{(\beta)}_{ikb} + p^{(\beta)} \kappa_{ij}^{(\beta)}, s^{(\beta)}_i \right)$$
+
+$$\delta_n \sim \mathrm{N} \left( \zeta^{(\delta)}_{ikb} + p^{(\delta)} \kappa_{ij}^{(\delta)}, s^{(\delta)}_i \right)$$
+
+$$\tau_n  \sim \mathrm{N}_{.001} \left( \zeta^{(\theta)}_{ikb} + p^{(\theta)} \kappa_{ij}^{(\theta)} + \zeta^{(\xi)}_{il} + p^{(\xi)} \kappa_{il}^{(\xi)}, s^{(\tau)}_i \right)$$
+
+where
+$\zeta_{ikb}$ is an individual's condition (nonregular, regular, deterministic) mean in block pair $b$,
+$p$ is a scaling factor,
+and $\kappa_{ij}$ represent an individual's stimulus-location-dependent deviations from the individual's condition mean.
+
+Participant-level parameters $\zeta_{ikb}$ are assumed to be normally distributed, e.g.
+
+<!-- $$\zeta_{ikb}^{(\beta)} \sim \mathrm{N} \left( \mu_{kb}^{(\beta)}, \sigma^{(\beta)} \right)$$ -->
+
+$$\zeta_{ikb}^{(\beta)} \sim \mathrm{N} \left( \mu_{kb}^{(\beta)}, \sigma^{(\beta)} \right)$$
+
+where 
+
+$$\sigma^{(\beta)} \sim q^{(\beta)} t^+_{\mathit{df} = I - 1}$$
+
+and $q$ is a scaling factor, and $t^+_{\mathit{df}}$ is a half-$t$ distribution with $I - 1$ degrees of freedom restricted to positive values.
+
+
+```{r echo = FALSE}
+scale_sigma <- data.frame(
+  parameter = c("alpha", "beta", "nu", "theta", "xi")
+  , scaling = c(.6, .1, .6, .05, .005)
+)
+```
+
+  
+In the SRTT, response times and accuracy vary substantially by stimulus and/or response location.
+Therefore, for each participant $i$ and stimulus location $j = 1, ..., 6$, we included normally distributed parameters $\kappa_{ij}$ to capture such differences
+
+$$\kappa_{ij}^{(\beta)} \sim \mathrm{N} \left( \mu_j^{\kappa^{(\beta)}}, \sigma_j^{\kappa^{(\beta)}} \right)~\mathrm{for}~j = 1, ..., 5$$
+
+and
+
+$$\kappa_{i6}^{(\beta)} = - \sum_{j = 1}^{5} \kappa_{ij}^{(\beta)}$$
+
+The
+
+$$\mu_j^{\kappa^{(\beta)}} \sim \mathrm{N}\left(0, 1\right)~\mathrm{for}~j = 1, ..., 5$$
+
+and
+
+$$\mu_{6}^{\kappa^{(\beta)}} = - \sum_{j = 1}^{5} \mu_j^{\kappa^{(\beta)}}$$
+
+Standard deviations were modeled as coming from a half-$t$ distributions
+
+$$\sigma_j^{\kappa^{(\beta)}} \sim t^+_{\mathit{df} = I - 1}$$
+
+<!--
+Population-level parameters
+
+- $\lambda^{(\beta)}_k$: scale
+- $\gamma^{(\beta)}_k$: shape
+- $\upsilon^{(\beta)}_k$ initial limit
+- $\psi^{(\beta)}_k$ mean
+-->
+
+The condition means are defined as the weighted sum of one or more shifted and stretched exponential functions $f(b)$,
+
+$$\mu_{kb} = \sum_{m = 1}^3 w_{km} f_m(b)_{\lambda_m, \gamma_m, \upsilon_m, \iota_m}$$
+
+<!-- and t $\psi^{(\beta)}_m$ is the average difference between initial and final limit. -->
+
+We use these functions in a similar fashion as model terms in linear models:
+Condition means are the weighted sum of multiple temporally-changing functions (instead of regression coefficients),
+and the condition weights $w_{km}$ chosen in a way that
+the first function is equivalent to an intercept term,
+the second function is equivalent to the effect of regular vs. nonregular trials, and
+the third function is equivalent to the effect of deterministic trials vs. the average of regular and nonregular trials;
+amounting to a Helmert coding scheme.
+
+The functions are defined as
+
+$$f_m(b) = \upsilon_m + (\iota_m - \upsilon_m) e^{-(\frac{b}{\lambda_m})^{-\gamma_m}}$$
+
+where 
+$\upsilon_m$ is the initial limit,
+$\iota_m$ is the final limit.
+$\lambda_m$ is the temporal location of the inflection point of this function, and
+$\gamma_m$ is a stretching exponent (shifting the function's steepness).
+
+
+The final limit $\iota_m$ may be re-written as
+<!-- $f_2 = \frac{\psi \gamma B}{\lambda   \Gamma{(\gamma^{-1})}} + \upsilon$ -->
+$$\iota_m = \frac{\gamma_m \psi_m B}{\lambda_m \Gamma(\gamma_m^{-1})} + \upsilon_m$$
+
+where $B$ is the number of block pairs, $\Gamma(.)$ is the Gamma function,
+and $\psi_m$ is the *average effect*, i.e., the average difference between $f_m(b)$ and the initial limit $\upsilon_m$.
+
+We use these average effects $\psi_m$ as the target of inference to test for overall changes (first function),
+the effect of nonregular vs. regular trials (second function),
+and the effect of deterministic vs. random blocks (third function).
+Bayes Factors ($\mathit{BF}$) are calculated using the Savage-Dickey density ratio [@wagenmakers_bayesian_2010]
+from logspline densities [@kooperberg_logspline_1992].
+
+(ref:exponential-functions) Left panel: Shifted and stretched exponential functions for different values of $\lambda$ (location) and $\gamma$ (shape), with $\upsilon = 1$ and $\psi = \pm 1$. Right panel: The average effect $\psi$ corresponds to the area under the curve (blue) between initial limit and the function's value $f(b)$.
+
+```{r echo = FALSE, fig.env="figure", fig.width = 9, fig.height = 4, fig.cap = "(ref:exponential-functions)"}
+par(mfrow = c(1, 2), las = 1)
+b <- seq(1, 7, .1)
+
+stretched_exponential <- function(x, lambda, gamma, upsilon, iota) {
+  (iota - upsilon) * exp(-((x/lambda)^-gamma)) + upsilon
+}
+
+plot.new()
+plot.window(xlim = c(1, 7), ylim = c(0, 2))
+
+out <- mapply(
+  FUN = function(x, lambda, gamma, upsilon, iota, col, lty) {
+    y <- stretched_exponential(x, lambda, gamma, upsilon, iota)
+    lines(x, y, col = col, lty = lty)
+    idx <- x == floor(x)
+    points(x[idx], y[idx], col = col, pch = 16)
+    
+  }
+  , lambda  = rep(c(4, 6), times = 4, each = 1)
+  , gamma   = rep(c(4, 8), times = 2, each = 2)
+  , upsilon = rep(1      , times = 8, each = 1)
+  , iota    = rep(c(2, 0), times = 1, each = 4)
+  , col = 1:4
+  , lty = rep(1:2, times = 1, each = 4)
+  , MoreArgs = list(
+    x = b
+  )
+  , SIMPLIFY = FALSE
+)
+axis(side = 1)
+axis(side = 2)
+
+legend(
+  "topleft"
+  , legend = c(
+    expression(lambda==4~gamma==4)
+    , expression(lambda==6~gamma==4)
+    , expression(lambda==4~gamma==8)
+    , expression(lambda==6~gamma==8)
+  )
+  , col = 1:4
+  , lty = 1
+  , bty = "n"
+)
+
+
+plot.new()
+plot.window(xlim = c(1, 7), ylim = c(0, 2))
+
+polygon(
+  x = c(b, rev(b))
+  , y = c(
+    stretched_exponential(b, lambda = 2.5, gamma = 8, upsilon = 1, iota = 2)
+    , rep(1, length(b))
+  )
+  , col = "skyblue1"
+  , border = NA
+)
+lines(x = b, y = stretched_exponential(b, lambda = 2.5, gamma = 8, upsilon = 1, iota = 2), col = 1)
+
+axis(side = 1)
+axis(side = 2)
+```
+

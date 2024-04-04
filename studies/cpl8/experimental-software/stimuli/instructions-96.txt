@@ -1,0 +1,7 @@
+Das Quadrat erscheint dabei nicht an einer zufälligen Position des Bildschirms, sondern folgt meist einer Reihenfolge: Stellt man sich vor, dass die sechs Positionen auf dem Bildschirm von links nach rechts mit den Zahlen 1 bis 6 nummeriert sind, wird das Quadrat der folgenden Reihenfolge folgen:
+
+4 – 5 – 6 – 3 – 1 – 2.
+
+Bitte präge dir diese Reihenfolge gut ein und nutze dein Wissen über die Reihenfolge, um die Aufgabe möglichst gut zu bearbeiten.
+
+Auf dem folgenden Bildschirm kannst du dir die Reihenfolge auch noch einmal anschauen.

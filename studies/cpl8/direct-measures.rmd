@@ -1,0 +1,92 @@
+---
+title: "Untitled"
+author: "Marius Barth"
+date: "`r Sys.Date()`"
+output: 
+---
+
+
+# Direct Measures of Explicit Sequence Knowledge {#appendix-direct-measures}
+
+```{r}
+interview_agg <- within(interview_agg, {
+  ones <- 1
+  correct <- factor(correct, levels = 0:6)
+  free_recall <- factor(free_recall, levels = 0:6)
+})
+
+cross_tab <- aggregate(cbind(n = ones) ~ material + instructions + free_recall + correct + binary, data = interview_agg, FUN = sum, drop = FALSE) |>
+  within({
+      correct <- factor(correct, levels = 0:6)
+  free_recall <- factor(free_recall, levels = 0:6)
+  })
+cross_tab$n[is.na(cross_tab$n)] <- 0
+
+# subset(cross_tab, criterion == "implicit" & material == "probabilistic" & instructions == "sequence concealed")
+# subset(cross_tab, criterion == "explicit" & material == "mixed deterministic" & instructions == "sequence revealed")
+
+cross_tab  <- within(cross_tab, {
+  material <- factor(material, levels = levels(material), labels = paste0(levels(material), " materials"))
+  correct <- factor(correct, levels = 0:6)
+  free_recall <- factor(free_recall, levels = 0:6)
+})
+
+cross_wide <- with(interview_agg, table(material, instructions, free_recall, correct)) |> 
+  as.data.frame() |>
+  tidyr::pivot_wider(values_from = "Freq", names_from = "correct", id_cols = material:free_recall)
+
+cross_wide_sequenced<- with(subset(interview_agg, binary == 1), ftable(material, instructions, free_recall, correct)) |> 
+  as.data.frame() |>
+  tidyr::pivot_wider(values_from = "Freq", names_from = "correct", id_cols = material:free_recall)
+
+prepared_tables <- split(cross_wide, cross_wide[, c("material", "instructions")], sep = ", ") |>
+  lapply(function(x) {
+    x$material <- NULL
+    x$instructions <- NULL
+    x <- papaja::apa_num(x, digits = 0)
+    x[x == "0"] <- "."
+    x$free_recall[x$free_recall == "."] <- "0"
+    # x[x == "NA"] <- "."
+    variable_label(x) <- list(
+      free_recall = "Free recall"
+    )
+    x
+  })
+
+prepared_tables_sequenced <-  split(cross_wide_sequenced, cross_wide[, c("material", "instructions")], sep = ", ") |>
+  lapply(function(x) {
+    x$material <- NULL
+    x$instructions <- NULL
+    x <- papaja::apa_num(x, digits = 0)
+    x[x == "0"] <- "."
+    x$free_recall[x$free_recall == "."] <- "0"
+    # x[x == "NA"] <- "."
+    variable_label(x) <- list(
+      free_recall = "Free recall"
+    )
+    x
+  })
+
+prepared_tables <- Map(
+  full = prepared_tables
+  , sequenced = prepared_tables_sequenced
+  , f = function(full, sequenced) {
+    for (i in seq_len(nrow(full))) {
+      for (j in seq_len(ncol(full) - 1) + 1) {
+        if(full[i, j] != ".") {
+          full[i, j] <- paste0(full[i, j], " (", if(sequenced[i, j] == ".") "0" else sequenced[i, j], ")")
+        }
+      }
+    }
+    full
+  }
+)
+
+apa_table(
+  prepared_tables
+  , col_spanners = list("Forced choice" = c(2, 8))
+  , caption = "Number of correctly reproduced transitions in free-recall and forced-choice tests. Numbers for only those participants who indicated that they were in a sequenced condition are given in parentheses."
+)
+
+```
+

@@ -1,0 +1,110 @@
+---
+title             : "How Implicit Sequence Learning and Explicit Sequence Knowledge Are Expressed in a Serial Response Time Task"
+shorttitle        : "On the Expression of Sequence Learning"
+
+author: 
+  - name          : "Marius Barth"
+    affiliation   : ""
+    corresponding : yes    # Define only one corresponding author
+    address       : "Herbert-Lewin-Str. 2, 50931 Cologne, Germany"
+    email         : "marius.barth@uni-koeln.de"
+  - name          : "Christoph Stahl"
+    affiliation   : ""
+  - name          : "Hilde Haider"
+    affiliation   : ""
+
+affiliation:
+  - id            : ""
+    institution   : "University of Cologne"
+
+authornote: |
+  Marius Barth, Christoph Stahl, and Hilde Haider,
+  Department of Psychology, University of Cologne.
+  This work was funded by Deutsche Forschungsgemeinschaft Grant BA-7059/1-1 to Marius Barth.
+  Data, code and materials necessary to reproduce the analyses reported in this article are available at https://github.com/methexp/cpl
+
+abstract: |
+  Sequence learning in the serial response time task (SRTT) is one of the few learning phenomena
+  that are widely agreed to be implicit in nature (i.e., that learning may proceed in the absence of awareness).
+  Evidently, it is also possible to explicitly learn a sequence of events.
+  In the past few decades, research into sequence learning largely focused on the type of representation that may underlie implicit sequence learning, and whether or not two independent learning systems are necessary to explain qualitative differences between implicit and explicit learning.
+  Using the drift-diffusion model, here we take a cognitive-processes perspective on sequence learning and investigate the
+  cognitive operations that benefit from implicit and explicit sequence learning (e.g., stimulus detection or encoding, response selection, or response facilitation).  To separate the processes involved in expressing implicit versus explicit knowledge, we manipulated explicit sequence knowledge independently of the opportunity to express such knowledge. Performance data from this experiment was fed into a dynamic drift-diffusion model that allowed us to disentangle the contributions of the above-mentioned processes to sequence-learning effects. Results revealed three findings that are relevant for sequence learning theories. We discuss how the diffusion model may be helpful in future research addressing these theories.
+  
+keywords          : "keywords"
+wordcount         : "8,642"
+
+bibliography      : ["r-references.bib", "../../../../methexp.bib"]
+citation-style    : "../../../../apa-6th-edition.csl"
+
+floatsintext      : yes
+linenumbers       : yes
+draft             : no
+mask              : no
+
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+
+keep_md           : no
+
+classoption       : "doc"
+documentclass     : apa6                                                        # todo: switch to apa7
+output            : papaja::apa6_pdf
+---
+
+```{r include = FALSE}
+library(papaja)
+if(!requireNamespace("magick", quietly = TRUE)) install.packages("magick")
+r_refs("r-references.bib")
+```
+
+```{r}
+# Seed for random number generation
+set.seed(42L)
+knitr::opts_chunk$set(
+  cache.extra = knitr::rand_seed
+  , fig.env = "figure*"
+  , fig.width  = 12
+  , fig.height =  5
+)
+project_folder <- rprojroot::find_rstudio_root_file()
+afex::set_sum_contrasts()
+options(papaja.mse = FALSE)
+```
+
+```{r child = "studies/cpl8/introduction.rmd"}
+```
+
+# Method
+
+```{r child = "studies/cpl8/method-for-paper.rmd", eval = TRUE}
+```
+
+# Results
+
+```{r child = "studies/cpl8/results.rmd", eval = TRUE}
+```
+
+# Discussion
+
+```{r child = "studies/cpl8/discussion.rmd", eval = TRUE}
+```
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
+
+\clearpage
+
+# (APPENDIX) Appendix {-} 
+
+```{r child = "studies/cpl8/model-specification.rmd", eval = T}
+```
+
+\clearpage
+
+```{r child = "studies/cpl8/direct-measures.rmd"}
+```
+

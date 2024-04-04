@@ -1,0 +1,182 @@
+---
+title             : "Discussion"
+output            :
+  bookdown::html_document2:
+    number_sections   : false
+bibliography      : ["r-references.bib", "../../../../methexp.bib"]
+---
+
+<!--
+@esser_what_2021 argue that not simple associative strengthening  but an implicit  learning mechanism that makes predictions and processes prediction error is necessary that will enable the development of explicit sequence knowledge.
+
+@mulder_bias_2012: advance knowledge (either base-rate or payoff manipulation) shifts starting point of the decision process
+-->
+
+
+<!--
+- Replicated finding:
+  - Implicit sequence learning is expressed at the response-selection stage + response competition
+  - Explicit sequence learning shifted bias towards regular response option
+  
+- Non-replicated finding:   
+  - effects on nondecision time in probabilistic materials
+-->
+  
+<!-- ## Summary and main results -->
+
+We set out to pinpoint the cognitive processes that are involved in the expression of implicit versus explicit sequence knowledge.
+We found that implicit sequence knowledge gradually affects cognitive processes during stimulus-based task processing, whereas explicit knowledge supports a switch to plan-based processing.
+
+In our baseline condition (probabilistic materials, sequence concealed),
+we found that sequence learning was expressed by a combination of effects on starting point, drift rate, and response-competition bias.
+Over the course of training, the starting point was shifted towards the regular response,
+indicating that even before the imperative stimulus was presented,
+the response-selection process was increasingly biased towards the rule-adhering response option.
+Moreover, as suggested by higher drift rates for regular trials, evidence accumulation was faster for rule-adhering trials,
+indicating that either the information from the imperative stimulus or the stimulus-response rule was processed more efficiently.
+Nondecision time was invariant to stimulus-location regularity, but varied by response-location regularity (i.e., we found an effect of response competition),
+indicating an additional learning effect at the motor level.
+To summarize, response selection appears to be involved in implicit sequence learning.
+This is in line with previous findings supporting S--R representations [@schwarb_generalized_2012], and suggests the involvement of a multidimensional system (i.e., combining stimulus and response dimensions).
+In addition, we found evidence for response-competition bias toward the regular responses, suggesting the involvement of motor facilitation. 
+As the present study confounded effectors with response locations, it could be explained by both effector-specific or general effects [@willingham_implicit_2000; @verwey_effector_2005]. 
+Future research is needed to separate these two factors and their effects on the response-competition parameter.
+
+Participants who worked on probabilistic materials and received advance knowledge of the sequential structure, 
+and were encouraged to use this knowledge,
+were hard-pressed to express this extra knowledge.
+Overall, the performance pattern of this group was highly similar to that of the sequence-concealed group, with sequence learning being reflected in effects on starting point, drift rate, and response competition.
+Compared with the sequence-concealed condition, the effect on drift rate was increased, whereas the effect on starting point was reduced.
+Future research is needed to determine whether these differences are robust and reflect participants' attempts to express their explicit knowledge.
+
+By contrast, participants who worked on mixed-deterministic materials showed a qualitatively distinct pattern of parameter estimates.
+It was characterized by a much stronger effect on the starting point and a steep reduction in nondecision time. 
+In addition, boundary separation was increased in the deterministic blocks.
+There were no effects on drift rate or the response-competition parameter.
+This parameter pattern suggests that participants engaged in plan-based task performance,
+using their explicit knowledge to anticipate the stimulus and prepare their response.
+This anticipation was so successful (i.e., the starting point was so strongly shifted towards the *regular* boundary) that participants needed to extract only very little information from the stimulus during the decision process.
+(The present finding of no effect on drift rate in the deterministic condition should therefore be interpreted with caution:
+It may simply reflect the fact that, in our study, virtually no information needed to be sampled from the stimulus.)
+<!-- may therefore reflect either the absence of an effect or the lack of sufficient data to estimate this parameter) -->
+Because plan-based performance speeded up participants' responses in the deterministic blocks,
+they could afford to increase their response caution (i.e., boundary separation) in these blocks.
+
+<!-- The model-based analyses revealed that this effect is attributable to a reduction in nondecision time, -->
+<!-- a finding which we interpret as evidence that stimulus detection and encoding are largely skipped: Participants already know where to look for the next stimulus, -->
+<!-- but basically they can even ignore the exact location of the location -- it suffices to wait just for something to happen on the screen, and then to press the next button. Moreover, the starting point of the decision process is strongly biased towards the regular response option, indicating that a decision is almost done even before the imperative stimulus is presented. Interestingly, drift rate does not seem to play a role in this effect -- however, given that the decision is almost done, there is no need to accumulate much more evidence. We therefore conclude that participants with instructed sequence knowledge who work on deterministic materials are well able to use this knowledge to switch to a plan-based processing mode.  -->
+
+Participants who worked on mixed-deterministic materials but did not receive advance sequence knowledge showed a similar pattern, with smaller effects overall.
+In this condition, a substantial subset of participants have apparently acquired explicit sequence knowledge and switched to a plan-based processing mode.
+<!-- (__we could easily add an analysis to underpin this claim__). -->
+The only difference was the (small) effect on the response-competition parameter, which was found in the mixed-deterministic/sequence-concealed group but not in the sequence-revealed group.
+Because the proportion of regular motor key presses is comparable between all four conditions, the absence of a response-competition effect for the mixed-deterministic/sequence-revealed group suggests that this parameter does not capture a purely motor-learning effect that is a mere by-product of repeatedly performing the same sequence of motor key presses.
+Instead, it might depend on performing the task in a stimulus-driven manner.
+Because participants who worked on mixed-deterministic materials in the sequence-revealed condition were able to work in a plan-based fashion from the very start, they might not have engaged in a sufficient amount of stimulus-based task performance in order to acquire a response-competition effect.
+In contrast, participants who worked on mixed-deterministic materials in the sequence-concealed condition were not able to engage in plan-based task performance from the start.
+The response-competition effect may be explained by the notion that this learning effect develops if and only if participants perform the task in a stimulus-based fashion.
+Clearly, future empirical work is needed to clarify the interpretation of this effect.
+<!-- - This effect is akin to response-competition effects that were found for repetition priming [but not semantic priming, see @voss_cognitive_2013] -->
+
+
+
+
+
+### Limitations
+
+It may be argued that our manipulation of sequence knowledge was not successful,
+given that revealed sequence knowledge was largely forgotten with probabilistic materials.
+However, we found a clear effect of instructions on error rates for nonregular trials,
+indicating that at least some participants tried to implement their sequence knowledge while performing the task.
+
+Instead of reflecting the absence of implicit learning effects on stimulus detection or encoding,
+the lack of an effect on nondecision time may point to the fact that both stimulus detection and encoding were relatively easy in our experiment (i.e., a floor effect).
+Alternatively, such a learning effect may truly be nonexistent. Earlier findings of 
+purely observational [@howard_serial_1992; @song_perceptual_2008]
+or parallel learning of stimulus locations [@mayr_spatial_1996]
+may then reflect either an artifact of explicit knowledge or
+implicit learning of spatial locations in a unidimensional system [c.f., @eberhardt_abstract_2017]
+that is expressed at the response-selection stage.
+
+
+<!-- may instead reflect explicit knowledge [@willingham_implicit_1999]. -->
+
+The DDM has been widely successful in capturing and explaining performance in many speeded-choice tasks,
+and we therefore deem it an excellent starting point for modelling performance in the SRTT.
+However, it makes a set of processing assumptions.
+Most importantly, it assumes that stimulus encoding, response selection, and response execution are organized sequentially,
+an assumption that might be violated in sequence learning, given that parallel architectures have been proposed for motor-behavior tasks such as the SRTT [e.g., @logan_toward_1988; @verwey_cognitive_2015].
+Hence, unless the model receives further validation for SRT tasks,
+the present set of findings may be alternatively accounted for by theories involving parallel processes.
+
+As another point of criticism, it may be argued that the DDM, as a decision model, may be less useful for conditions involving plan-based actions to the degree that plan-based action control requires little information from the stimulus to arrive at a decision. 
+Note, however, that the DDM was developed for decisions from memory, and the use of explicit knowledge may well be characterized as involving such memory-based decisions (i.e., recalling the next element of the sequence).
+
+<!-- - relatedly, the decision process in plan-based action starts as soon as the previous decision has been given (i.e., before, not after, the RSI); participants were discouraged from answering before the stimulus appeared (too-fast errors), so there were few responses during that period; yet, parameter estimates (e.g. of the nondecision time) may differ if the RSI is included in the to-be-modeled period (?);  -->
+
+
+### Future Directions
+
+Extensions of the SRTT allow to orthogonally manipulate stimulus vs. motor sequences
+by changing the stimulus-response mapping on each trial [e.g., @eberhardt_abstract_2017; @goschke_modularity_2012]
+Such extended designs provide the opportunity to validate the DDM's application to the SRTT,
+and to further pin down the interpretation of the observed parameter changes:
+To clarify how to interpret the response-competition effect that we found for stimulus-based implicit learners,
+it could be tested whether motor sequences, but not stimulus sequences selectively influence this parameter.
+Moreover, the effector-specificity of this effect could be investigated using a transfer task where effectors are changed but response locations are kept constant [e.g., @verwey_effector_2005].
+If sequence learning of stimulus locations guides spatial attention on the screen [as suggested by @mayr_spatial_1996],
+it should selectively influence stimulus detection (i.e., nondecision time).
+In the present work, we did not find such an effect, but stimulus detection was very easy;
+increasing the difficulty of stimulus detection (e.g., by presenting irrelevant stimuli in the other locations)
+might give rise to an effect of sequence learning on stimulus detection when responses are unrelated to stimulus locations.
+
+It is an unresolved issue whether two distinct learning systems (one multidimensional, one unidimensional) are necessary to explain the pattern of findings in the sequence-learning literature [@barth_parallel_2023],
+one of the reasons being that it is not clear along which dimensions information is considered to be processed separately within the unidimensional system.
+Our findings indicate that response selection is the locus of sequence learning in the SRTT, and that, therefore, only joint representations of stimulus and response features may subserve the standard SRTT effect.
+A unidimensional learning system that is separated along the lines of stimulus and response can, therefore, not explain our findings.
+However, if the unidimensional system is separated along abstract features such as location [as suggested by @eberhardt_abstract_2017; @haider_feature_2020],
+a unidimensional learning system could indeed provide the information necessary to guide spatial response selection.
+With the diffusion model introduced here, it would be possible to more directly test the separation of information processing that is implied by modularization. For instance, if other stimulus features not only affect stimulus processing (i.e., nondecision time) but also response-selection parameters, this would clearly speak against such modularized processing [@barth_parallel_2023].
+
+<!--
+The following only makes sense if stimulus information is incomplete [c.f. ratcliff & mckoon ]:
+In implicit learners, we found an effect of stimulus-location regularity on drift rate,
+which we interpret
+An experimental design implementing a sequence of motor key presses but only random stimuli deconfounds these effects;
+if drift rate then varies by motor regularity
+-->
+
+<!-- - if the last response serves as part of the stimulus, response selection might be influenced by last response location (then we need a more complicated model) -->
+
+
+In the present work, we used a regression approach at the group-level means to model the changes in parameter estimates over the course of learning.
+Most recently, considerable efforts have been made to model both gradual and sudden shifts in parameter estimates [@schumacher_validation_2024; @gunawan_time-evolving_2022].
+Such non-stationary models may be used to model individual learning curves at the level of a single transition,
+providing a principled on-line measure of a switch to plan-based action control in the SRTT.
+Moreover, these methods allow to investigate whether *implicit* sequence learning is indeed a gradual or a sudden phenomenon [c.f., @musfeld_repetition_2023].
+For a regression-based approach, recent advances in Bayesian estimation carry the potential to facilitate such endeavors:
+@henrich_seven-parameter_2023 implemented the seven-parameter DDM in Stan [@carpenter_stan_2017],
+a probabilistic programming language that uses Hamiltonian Monte Carlo, a sampling algorithm
+that provides better computational efficiency than the sampling algorithms used in the present work [@betancourt_conceptual_2017].
+
+
+### Conclusion
+
+The present study is the first to use the diffusion model to analyze processes underlying performance in the SRTT.
+In this first step, we focused on the effects of implicit learning and plan-based expression of explicit knowledge.
+Our results demonstrate the usefulness of the diffusion model in research on implicit learning.
+They indicate that implicit sequence learning in the SRTT guides response selection,
+supporting either multidimensional accounts of implicit sequence learning [@schumacher_hierarchical_2016] or, alternatively, 
+unidimensional accounts that assume that features from the same abstract dimension (e.g., spatial location) of both stimulus and response are jointly represented [@haider_feature_2020].
+
+In addition, we find evidence for response competition that is independent of response selection.
+More research is needed to investigate whether this effect represents effector-specific motor learning [@verwey_effector_2005] or is linked to abstract response categories [@willingham_implicit_2000].
+Supporting the recent tests of the unexpected-event hypothesis [@lustig_interplay_2022],
+strong decreases in response time are readily accounted for as a consequence of a switch to plan-based action control.
+This switch is possible only after the sequence already has become explicit,
+and only if the structure of the task makes such a change beneficial for performance.
+When implemented, such a strategy shift results in an anticipation of the next response even before the imperative stimulus is presented, allowing participants to largely bypass stimulus processing [as reflected in reduced interference effects in Stroop and Simon tasks, @haider_old_2011; @koch_anticipatory_2007].
+
+
+
+  

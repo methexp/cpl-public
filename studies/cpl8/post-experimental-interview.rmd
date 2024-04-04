@@ -1,0 +1,48 @@
+---
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Studie: **cpl8**
+
+Versuchspersonen-ID: \dotfill
+\bigskip\bigskip
+
+1. *"In dieser Studie werden Teilnehmende zufällig einer Versuchsbedingung zugeteilt: In einer Versuchsbedingung erscheinen die Quadrate nicht immer, aber sehr häufig, in einer bestimmten Reihenfolge. Was denkst du, warst du in der Bedingung, in der die Quadrate einer Reihenfolge folgten oder nicht?"*
+
+\bigskip
+\dotfill
+\bigskip\bigskip
+
+
+
+2. *"Wie sicher bist Du Dir (in Prozent)?"*
+
+\bigskip
+\dotfill
+\bigskip\bigskip
+
+```{r out.width = "90%", fig.align = 'center'}
+knitr::include_graphics(file.path(rprojroot::find_rstudio_root_file(), "illustrations", "hands-for-paper-digits.png"), rel_path = F)
+```
+
+3. Die Reihenfolge frei berichten lassen: *"Wenn man sich vorstellt, dass die Quadrate von links nach rechts nummeriert sind, kannst du die Reihenfolge genauer beschreiben?"*
+
+\bigskip
+\dotfill
+
+\bigskip
+\dotfill
+\bigskip\bigskip
+
+4. Die einzelnen Übergänge abfragen:
+  - *"Welche Position sollte nach Position 1 kommen?"* \dotfill\bigskip
+  - *"Welche Position sollte nach Position 2 kommen?"* \dotfill\bigskip
+  - *"Welche Position sollte nach Position 3 kommen?"* \dotfill\bigskip
+  - *"Welche Position sollte nach Position 4 kommen?"* \dotfill\bigskip
+  - *"Welche Position sollte nach Position 5 kommen?"* \dotfill\bigskip
+  - *"Welche Position sollte nach Position 6 kommen?"* \dotfill\bigskip
+

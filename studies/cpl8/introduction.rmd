@@ -1,0 +1,337 @@
+---
+title             : "A tale yet to be told"
+output            :
+  bookdown::html_document2:
+    number_sections   : false
+bibliography      : ["r-references.bib", "../../../../methexp.bib"]
+# citation-style: "../../../../apa-6th-edition.csl"
+
+abstract: |
+  Sequence learning in the serial response time task (SRTT) is one of few learning phenomena
+  where researchers agree that such learning may be implicit in nature (i.e., that it may proceed in the absence of awareness).
+  Evidently, it is also possible to explicitly learn a sequence of events.
+  <!-- In the past few decades, research into sequence learning largely focused on the type of representation that may underlie implicit sequence learning, and whether or not two independent learning systems are necessary to explain qualitative differences between implicit and explicit learning. -->
+  Here we use drift-diffusion models to identify cognitive processes involved in sequence learning: What are the
+  cognitive operations that benefit from implicit and explicit sequence learning---faster stimulus detection, encoding, more efficient response selection, or faciliation at the motor level?
+  To this end, we manipulated explicit sequence knowledge and the opportunity to express such knowledge.
+  Performance data from this experiment provide us with a rich testbed for a dynamic drift-diffusion model that allows us to disentangle
+  the contributions of the above-mentioned processes to sequence-learning effects. Theoretical relevance of our findings for current theories are discussed, and we give an outlook on how the method may be used to further our understanding of implicit learning.
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+papaja::r_refs("r-references.bib")
+project_folder <- rprojroot::find_rstudio_root_file()
+```
+
+<!-- ### SRTT: How it works -->
+
+Sequence learning in the serial response time task (SRTT) is one of few learning phenomena where researchers agree that such learning may proceed in the absence of awareness.
+In the classical paradigm [@nissen_attentional_1987],
+stimuli are presented on a computer screen,
+and participants are instructed to press corresponding keys on the keyboard as quickly and accurately as possible.
+Unbeknownst to participants, stimuli are not presented in a random order, but follow an underlying sequential regularity.
+Over the course of learning, participants respond more quickly and accurately to stimuli that are presented in regular (compared with nonregular) stimulus locations.
+However, participants often fail to express any explicit sequence knowledge in direct tests of such knowledge,
+including verbal report, cued or free generation tasks, recognition tests, or process-dissociation measures 
+[@destrebecqz_can_2001; @buchner_multinomial_1997; @willingham_dissociation_1993; @willingham_development_1989; @curran_attentional_1993; @cohen_attention_1990; @frensch_implicit_2003; @haider_generation_2005].
+It has therefore been concluded that, at least under specific circumstances,
+sequence learning may proceed in the absence of awareness.
+Yet, participants may also obtain conscious sequence knowledge during learning.
+When trying to use this explicit knowledge to improve task performance,
+different processes are involved than in the expression of implicit knowledge.
+As a consequence, SRTT performance is often driven by a mixture of the sets of processes involved in expressing implicit and explicit knowledge.
+Hence, pinpointing empirical findings to implicit learning is difficult, slowing theoretical progress.
+Here we use drift-diffusion models to identify the processes involved in expressing implicit sequence knowledge and separate them from processes involved in expressing explicit knowledge.
+
+In the remainder of the introduction, first we briefly discuss theories of implicit and explicit sequence learning. 
+Next, the drift-diffusion model is introduced, as well as its application to the SRTT in the present study.
+
+## Processes and representations underlying implicit sequence learning
+
+Despite a broad agreement that sequence learning may occur implicitly, there is no consensus on the representations underlying sequence learning [for a review, see @abrahamse_representing_2010]:
+<!-- and consequently, the locus of sequence learning: -->
+<!-- abstract rules vs. transitional probabilities -->
+In a standard SRTT, stimulus locations and motor responses follow the same sequence, 
+allowing for (at least) four different types of representations that could subserve sequence learning.
+We first discuss two types of simple representations: associations between subsequent responses, and between subsequent stimuli.
+
+Drawing on early findings of an involvement of motor areas in sequence learning,
+associations between responses (frequently coined as the formation of R--R associations) has been one of the first explanations of sequence learning.
+Importantly, the standard SRTT effect seems to be driven by effector-independent representations [@cohen_attention_1990; @keele_modularity_1995].
+@willingham_implicit_2000 proposed that the representations underlying implicit sequence learning comprise sequences of response locations [see also @willingham_implicit_1999].
+In addition, @verwey_effector_2005 found evidence for effector-specific sequence learning after extensive practice.
+
+In addition to response-based learning, 
+some studies found evidence for purely perceptual learning, considered to be subserved by associations between consecutive stimuli (S--S learning):
+@howard_serial_1992 demonstrated that participants could learn a stimulus sequence from mere observation.
+@mayr_spatial_1996 found learning of a sequence of stimulus locations that was unrelated to another sequence of key presses [see also @haider_implicit_2014].
+<!-- An alternative to response-location learning is response-effect learning, where (ideomotor principle) -->
+
+In the dual-systems model [@keele_cognitive_2003], these simple associations can be located in the *unidimensional* system, 
+which is considered to comprise multiple dimension-specific modules that allow for independent processing of stimulus and response features.
+The acquired representations in this system are thought to be inaccessible to consciousness.
+Going beyond simple associations, the dual-systems model also postulates a *multidimensional* system that may integrate information from multiple dimensions, for instance, stimulus and response features.
+This system is thought to depend on attention and its contents are accessible to consciousness.
+
+As one example for complex representations that integrate information from stimulus and response, *response-effect learning* (or R--S learning) has been proposed.
+It refers to the formation of associations between compounds comprising of the current trial's response and the stimulus presented in the subsequent trial
+[@ziessler_learning_2001; @hoffmann_irrelevant_2001].
+However, @abrahamse_representing_2010 argued that response-effect learning resembles the anticipation of an outcome of an action, the principle underlying the ideomotor theory to action control [@shin_review_2010],
+and suggested that the ideomotor principle might be restricted to explicit sequence learning.
+
+Another form of associations between stimuli and responses are considered in S--R learning, which considers compounds comprising the current trial's stimulus and response.
+Initial evidence for S--R learning comes from studies manipulating the stimulus setup: 
+@willingham_development_1989 found only minimal transfer of a sequence of motor key presses after the stimulus setup changed.
+The authors concluded that sequence learning is neither perceptual nor purely motor,
+but that a sequence of "condition-action statements" [@willingham_development_1989, p. 1058] is learned.
+Similarly,  @schwarb_implicit_2010 found that sequence learning is disrupted if the S--R rules between a training and a transfer task are are changed.
+<!-- __However, the distinction between response-based and stimulus-response learning becomes fuzzy as soon as one considers the possibility that one's own actions (on the last trial) may serve (in conjunction with the imperative stimulus on the screen) as a stimulus on the next trial.__ -->
+<!-- Schumacher and colleagues find an involvement of response-selection processes in sequence learning: -->
+Furthermore, @schumacher_parallel_2009 found that a secondary task requiring parallel response selection disrupted sequence learning, and
+@schwarb_neural_2009 found that spatial response selection and spatial sequence learning (of stimulus locations and/or key presses) are related to almost entirely the same brain areas.
+
+In the dual-systems-model, the two systems are considered to differ with respect to their accessibility to consciousness, their dependence on attention, and the representations subserving learning.
+Findings regarding the attentional demands of implicit sequence learning point into the direction that sequence learning relies on attention. For instance, @shanks_attentional_2005 manipulated attentional load and found that sequence learning is moderated by attentional load.
+<!-- (**however, SL was also explicit**). -->
+More importantly, @gaschler_implicit_2012 manipulated the task set via instructions and found that even under conditions where it is unlikely that participants acquired explicit sequence knowledge, instructions predicted which of two sequences were learned.
+<!-- Attention (task set): @gaschler_implicit_2012 (task set); @shanks_attentional_2005 (resource) -->
+In a similar vein, @schumacher_hierarchical_2016 summarized their response-selection account as positing that not simple associations,
+but hierarchically organized representations containing features of stimuli and responses, task goals, and drives are acquired in sequence learning.
+Response selection is, however, typically considered to be a central process [@hazeltine_understanding_2016],
+to be dependent on selective attention (i.e., the task set), and necessitates information about both stimuli and responses,
+The dual-systems model considers these features to be characteristic of the multidimensional learning system.
+In other words, a phenomenon described as implicit---that is, inaccessible to consciousness---is being explained by a process thought to be accessible to consciousness.
+This presents a challenge to the dual-systems model.
+What constitutes a dimension is, however, not well-defined in the model, and since its introduction there has been considerable debate whether the modules comprising the unidimensional system are separated along dimensions such as stimulus and response features, 
+or whether the modules are separated along abstract feature dimensions such as location [@haider_feature_2020; @eberhardt_abstract_2017].
+If, indeed, the unidimensional learning system included a processing module specific to spatial location, stimulus and response locations could be represented together within such a module, providing the necessary information to subserve a response-selection mechanism.
+
+Taken together, there is still considerable debate about the processes, representations, or systems underlying implicit sequence learning.
+This line of research is considerably complicated by the omnipresent possibility that empirical findings may be driven not only by implicit sequence learning, but may also (or only) reflect explicit knowledge.
+
+<!--
+# Move to discussion:
+More recently, 
+Verwey and colleagues proposed their *Cognitive framework for Sequential Motor Behavior* [C-SMB, @verwey_cognitive_2015; @verwey_contributions_2015]
+that aims at explaining a wide array of sequential motor behavior and learning (including discrete sequence production and SRTT performance).
+They assume that in the SRTT, participants may use different processing strategies;
+and that in sequencing tasks, we typically find a mixture of different processing strategies.
+initially reaction mode, associative mode (Verwey & Abrahamse, 2012; Verwey & Wright, 2014):
+associations are formed at stimulus, central, and motor processing stages
+Representations are specific to processing level (stimulus, central, motor) and autonomous.
+Motor and cognitive processors race for response.
+-->
+
+<!--
+From @runger_how_2008:
+> Research on incidental sequence learning typically is concerned with the characteristics of implicit or nonconscious learning. In this article, the authors aim to elucidate the cognitive mechanisms that contribute to the generation of explicit, reportable sequence knowledge. According to the unexpected event hypothesis (P. A. Frensch, H. Haider, D. Rünger, U. Neugebauer, S. Voigt, & J. Werg, 2003), individuals acquire reportable knowledge when they search for the cause of an experienced deviation from the expected task performance. The authors experimentally induced unexpected events by disrupting the sequence learning process with a modified serial reaction time task and found that, unlike random transfer sequences, a systematic transfer sequence increased the availability of reportable sequence knowledge. The lack of a facilitative effect of random sequences is explained by the detrimental effect of random events on the presumed search process that generates reportable knowledge. This view is corroborated in a final experiment in which the facilitative effect of systematic transfer blocks is offset by a concurrent secondary task that was introduced to interfere with the search process during transfer.
+-->
+
+<!--
+From @hoffmann_stimulus-response_1997:
+
+> The RT difference between responses to locations and symbols vanishes in the course of learning for the complete explicit knowledge group. In order to account for this effect, we presume that the response control of these subjects shifts from stimuli to motor programs, so that RTs become increasingly independent of the stimuli used.
+-->
+
+
+
+<!--
+@willingham_neuropsychological_1998
+COBALT, two processing modes: conscious and unconscious 
+-->
+
+
+
+<!-- ### Insight into sequential regularities is highly correlated with sudden performance gains -->
+
+## Explicit sequence knowledge
+
+The emergence of explicit sequence knowledge is accompanied with
+sudden decreases of response times during training [@haider_how_2007; @haider_generation_2005].
+<!--
+From @rose_emergence_2010:
+
+> With a series of behavioral, electroencephalography (EEG) and functional magnetic resonance imaging (fMRI) studies, we were able to show that the emergence of awareness for a hidden regularity is accompanied by an increase in neural activity and in high-frequency coupling between distant brain areas as observed with a time--frequency resolved EEG analysis. More importantly, the increase in neural coupling was observed before awareness for the learned material was established behaviorally. In addition, coupling increases were paralleled by an fMRI-signal increase in the ventral striatum and the right ventrolateral prefrontal cortex directly preceding the emergence of awareness. The involvement of this system, which has already been linked to the processing of predictions and prediction errors, indicates the relevance of a reinforcement signal to generate awareness for the learned contingencies. Thus, our data provide direct evidence for the necessity of large-scale coupling and the evaluation of a predictive stimulus value as the basis for a transition from implicit to explicit memory.
+-->
+<!--
+From @wessel_transition_2012:
+
+> The extraction of (and subsequent adaptation to) regular patterns in the environment facilitates everyday actions. The cognitive and neural processes accompanying the transition from subconscious (implicit) to verbally reportable (explicit) knowledge about task contingencies are of high interest to the cognitive neurosciences, since they indicate a process that generates awareness for learned associations. Previous studies indicated an important role of high-frequency coupling (gamma-band) for the process that initiates the emergence of awareness for an implicitly learned task-underlying structure. It is unclear, however, whether this EEG coupling is indicative of a general, task-independent process accompanying the shift between implicit and explicit knowledge. To test the general role of this synchrony effect, we investigated EEG gamma-band coherence in the time period where this transition takes place using a serial reaction time paradigm. As expected, we find increased coupling in the gamma-band EEG between right prefrontal and occipital electrode sites just before the behavioral manifestation of emerging explicit sequence representation. These results support both the notion of general involvement of widespread cortical associative couplings in the generation of conscious knowledge and the necessity to study emerging consciously available memory representations using fine-grained properties of behavioral data.
+-->
+Using a combination of EEG and fMRI studies,
+@rose_emergence_2010 and @wessel_transition_2012 found that such rapid decreases in response times
+were accompanied by increases in neural coupling between distant brain areas and an increase in neural activity in brain areas that have been discussed as being involved in the processing of predictions and prediction errors.
+They interpreted these findings as evidence in favor of an increase in error processing that may serve as an unexpected event that triggers the emergence of sequence awareness.
+
+
+<!-- #### RT drops may serve as an unexpected event and trigger a search process -->
+
+The *Unexpected Event Hypothesis* [@frensch_route_2003; for a recent discussion, see @esser_what_2021] postulates that experiencing an unexpected event triggers a search process that may result in the discovery of the sequential regularity.
+Multiple studies [@runger_how_2008; @esser_emergence_2017; @schwager_data-driven_2012] found that inserting unexpected events into the SRTT indeed resulted in more explicit sequence knowledge.
+<!--
+@runger_how_2008 switched participants from one sequence to another, thereby creating performance detriment.
+@esser_emergence_2017 switching between short blocks of regular and random trials: more explicit sequence knowledge.
+@schwager_data-driven_2012 found that inserting unexpected events into the sequence resulted in more explicit sequence knowledge.
+-->
+Other studies suggest that RT drops may not be a precursor of sequence awareness,
+but may rather indicate a switch from stimulus-based to plan-based action control:
+These studies found that effects of response-selection conflict or difficulty were reduced if participants acquired explicit sequence knowledge:
+@hoffmann_stimulus-response_1997 found that RT differences between easy and difficult stimuli disappeared for explicit learners,
+@haider_old_2011  demonstrated that participants who showed an RT drop (i.e., explicit learners) also showed reduced Stroop-congruency effects.
+@tubau_modes_2007 found reduced response-repetition costs only for explicit learners,
+@koch_anticipatory_2007 found that participants who acquired explicit sequence knowledge showed reduced Simon effects.
+
+@lustig_interplay_2022 directly tested whether rapid RT decreases are a precursor of sequence awareness or an indicator of a switch to plan-based action control,  a switch that is only possible after participants acquired explicit sequence knowledge.
+To this end, they manipulated the ease of producing RT drops in the SRTT by manipulating the RSI in either a predictable or a random fashion,
+assuming that if RT drops are  a precursor of explicit knowledge, hampering such drops should reduce the acquisition of explicit sequence knowledge.
+If, instead, RT drops are indicative of a strategy shift from stimulus-based to plan-based action control that is possible as soon as explicit sequence knowledge has been acquired and the task design (and materials) allow to use this knowledge.
+@lustig_interplay_2022 found that RT drops are not a precursor of explicit conscious insight, but rather a consequence of a switch to plan-based action control.
+
+
+
+<!-- High correlation between RT drops and verbal report; -->
+<!-- also changes in neural activity. -->
+<!-- Is this the point in time when implicit learning is transformed into explicit knowledge? -->
+
+
+<!--
+Performing the SRTT may seem a strikingly simple task, yet it involves a
+multitude of cognitive operations that need to be performed: The imperative
+stimulus has to be detected and encoded, the corresponding response has to be
+selected according to a pre-specified rule; ultimately, a motor response has to
+be given.
+-->
+
+## Separating the processes underlying the expression of implicit and explicit knowledge
+
+
+Plan-based action control may be beneficial in some SRTT paradigms but not others.
+@barth_measuring_2018 reanalyzed two SRTT experiments using a drift-diffusion model.
+In Experiment 1, participants worked on probabilistic materials with 60% regular trials (i.e., with a probability of .6, the next stimulus follows the sequential structure).
+Such sequence materials are typically considered to enable robust sequence learning while participants remain largely unaware of the sequence [@jimenez_which_1999; @barth_assumptions_2019].
+By contrast, in Experiment 2, stimulus materials consisted of runs of 15 to 22 stimulus locations that followed a deterministic six-item first-order conditional sequence interrupted with runs of random trials of the same length. With these materials, participants were well able to acquire substantial amounts of explicit sequence knowledge.
+A comparison of both experiments revealed qualitatively different patterns of effects on diffusion model parameters.
+While these results may point to different representations underlying implicit versus explicit knowledge, they are more likely to reflect the switch to plan-based action control that was supported by deterministic but not probabilistic material.
+Note that the opportunity to gain explicit knowledge was confounded with the ability to switch strategy: 
+Probabilistic materials did not allow for reliably predicting the next stimulus and therefore encourage stimulus-based action control.
+In contrast, materials with chunks of deterministic runs might encourage a switch to plan-based action control (if participants are able to detect differences between regular and deterministic chunks, e.g., by detecting changes in fluency).
+Here we aimed at removing this confound and to more conclusively separate the amount of participants' explicit knowledge from its expression. 
+To identify the processes involved in the expression of implicit versus explicit knowledge, we used the diffusion model that is introduced next.
+
+<!-- Qualitative differences in the expression of implicit and explicit sequence knowledge may be explained with qualitatively different types of representations that affect different subcomponents of task performance:  -->
+<!-- For instance, explicit sequence knowledge may provide rich, abstract, non-specific representations, and should therefore have the potential to facilitate response selection.  -->
+<!-- By contrast, implicit sequence knowledge may be specific and affect only subcomponents of performance (e.g., motor processes). -->
+<!-- By contrast, it is also conceivable that implicit and explicit sequence knowledge share the same representational basis, -->
+<!-- but only explicit sequence knowledge allows to use the sequence knowledge in a plan-based manner. -->
+
+
+## The Drift-Diffusion Model
+
+
+<!--
+from diss:
+The diffusion model [@ratcliff_theory_1978; @ratcliff_diffusion_2008; see also @wagenmakers_methodological_2009; @voss_diffusion_2013] is a model of the cognitive processes involved in simple decision tasks, that has been applied to a wide array of applications in cognitive psychology.
+It disentangles the decision process (i.e., response selection) from other nondecision processes like stimulus encoding and response execution.
+-->
+
+```{r illustrate-diffusion, echo = FALSE, fig.cap = "The diffusion model. On each trial, the decision process (depicted as grey lines) begins at a starting point that is determined by parameter $\\beta$. The spread of the thresholds is determined by parameter $\\alpha$. Evidence is accumulated in a random-walk fashion. When one of the two thresholds is reached, a decision is made. The average rate of evidence accumulation is determined by parameter $\\delta$. The decision process is preceded by stimulus encoding and succeeded by response execution, the duration of both processes is captured by nondecision time $\\tau$. This basic diffusion model may be extended by response-execution bias $\\xi$ and intertrial variabilites for core parameters.", fig.height = 6, fig.env="figure*"}
+source(file.path(project_folder, "R", "plot_diffusion.R"))
+par(cex = 1, mar = c(5, 5, 5, 5), xpd = NA)
+set.seed(42L)
+plot_diffusion(alpha = 0.8, beta = .4, delta = 2, tau = 0, x = seq(0, 0.5, 1e-2), plain = TRUE)
+```
+
+
+The drift-diffusion model (DDM) has originally been proposed as a theory of memory retrieval [@ratcliff_theory_1978],
+but has been successfully applied to many speeded-choice tasks,
+furthering the understanding of the cognitive processes involved in these tasks
+[for reviews, see @ratcliff_diffusion_2016; @voss_diffusion_2013; @wagenmakers_methodological_2009].
+
+Figure\ \@ref(fig:illustrate-diffusion) illustrates the processing assumptions of the DDM. 
+It is assumed that on each trial,
+evidence is accumulated in a noisy fashion to reach a decision about the to-be-selected response.
+The *average* rate of evidence accumulation (drift rate $\delta$) is dependent on the quality of information from the stimulus or a match with memory.
+In the SRTT, harder-to-discriminate stimuli or more difficult S--R mappings should affect this parameter;
+moreover, if indeed consecutive S--R rules or R--R associations are learned in the SRTT, this would result in a memory match for regular responses and a mismatch for nonregular responses.
+The starting point of the decision process (parameter $\beta$) captures information that is already available before the stimulus is presented. In the SRTT, it may capture an anticipation of the to-be-selected response, which may also be driven either by R--R or S--R associations.
+The spread between both thresholds captures the decision criterion (i.e., response caution $\alpha$).
+Extradecisional processes, such as stimulus detection, its encoding, and response execution are captured by nondecision time $\tau$.
+If it is indeed the guiding of attention on the screen that mediates sequence learning,
+nondecision time should be affected by stimulus regularity. 
+It is also possible to further disentangle stimulus processing and response-related differences in nondecision time for regular vs. nonregular responses
+by estimating an additional response-competition parameter $\xi$ [@voss_separating_2010; @voss_cognitive_2013];
+purely-motor learning (effector-specific or not) could selectively mediate such a response-competition effect.
+The *full* DDM also assumes inter-trial variability in starting point, drift rate, and nondecision time;
+moreover, most recent advances in DDM modelling allow to capture temporal changes in parameter estimates [for an overview, see @schumacher_validation_2024], and there are first examples of how such models can be used to investigate learning curves [@cochrane_multiple_2023].
+Details on the DDM used in this study can be found in Appendix\ \@ref(appendix-model-specification).
+
+<!--
+from diss:
+*Decision caution* is captured by boundary separation $\alpha$, the spread of the two thresholds that are reached by the decision process.
+*Decision tendencies* are captured by bias parameter $\beta$, which is the starting point of the decision process relative to both thresholds.
+Nondecisional processes, such as *stimulus encoding and response execution*, are captured by nondecision time $\tau$.
+@voss_separating_2010 extended the diffusion with an additional parameter, response-execution bias $\xi$,
+that captures differences in response-execution times for responses that correspond to the upper or the lower threshold:
+It can, for example, capture differences in execution time for left or right hands (if one response is mapped to the left hand, the other response to the right hand).
+Moreover, in a variety of experimental paradigms, response competition (i.e., response facilitation and/or conflict), resulting in different response-execution times for both responses, are discussed as possible explanations for response-time effects; if such differences are present in an experiment but are not accounted for, the default diffusion model is unable to capture the differences adequately.
+Instead, incorporating response-execution bias into the model allows for testing contrasting theoretical accounts of a phenomenon. @voss_cognitive_2013 used response-execution bias $\xi$ to dissociate response conflict/response facilitation from effects on response-selection, measured by changes in drift rate.
+-->
+
+<!--
+from diss:
+Importantly, nondecision time $\tau$ and response-execution bias $\xi$ are conceptually distinct from response-selection processes,
+which are mapped onto the diffusion process.
+If sequence learning is indeed mediated by response-selection processes,
+it should be indicated by changes in the parameters of the diffusion process (i.e., drift rate, bias, or boundary separation);
+if, instead, sequence learning relies on noncentral processing stages (stimulus encoding or response execution),
+learning should be indicated by changes in nondecision time $\tau$ and/or response-execution bias $\xi$.
+If implicit sequence learning is response-based, responses that adhere to the sequence regularity should be facilitated by reactivation of the rule-adhering response; if a response is selected that does not adhere to the regularity, conflict with the pre-activated (rule-adhering) response might occur.
+If implicit sequence learning is stimulus-based, stimuli that adhere to the regularity should be encoded more easily;
+if a stimulus is presented that does not adhere to the regularity, it should be encoded less easily affecting nondecision time.
+
+An important difference between the priming studies of @voss_cognitive_2013 and a typical SRTT is that, in an SRTT,
+there are usually more than two response options. Therefore, it is necessary to use *accuracy coding*, with correct responses mapped to the upper threshold, and error responses mapped to the lower threshold of the diffusion process.
+This allows us to further distinguish the effects of regular vs. nonregular *stimuli* and of regular vs. nonregular *responses*:
+If a *stimulus* is presented in a regular location, an upper-threshold (i.e., correct) *response* is also regular, leading to response facilitation; a lower-threshold (i.e., error) response is not regular, leading to response conflict.
+If, instead, a stimulus is presented in a nonregular location, an upper-threshold (correct) response is also nonregular, thereby possibly leading to response conflict;
+a lower-threshold (error) response that follows the regularity would result in response facilitation, a lower-threshold response that does not follow the regularity would result in response conflict.
+That is, conflict or facilitation at the response level depends on whether the response that is chosen by the decision process is regular or not.
+In contrast, conflict or facilitation at the level of stimulus encoding does not rely on the response that is chosen by the decision process, but only depends on the stimulus.
+Therefore, if accuracy coding with more than two response options is used, conflict/facilitation trials vs. upper-/lower-threshold trials are deconfounded, and it is possible to disentangle effects of stimulus encoding and response execution.
+As a result, an effect of *stimulus regularity* indicates conflict/facilitation at stimulus encoding, while an effect of *response regularity* indicates conflict/facilitation at response execution.
+These factors are implemented by nondecision time being mapped onto *stimulus regularity*, and response-execution bias being mapped onto
+*response regularity*.
+Note, however, that both factors are highly correlated if participants commit relatively few errors; therefore, it may be difficult to distinguish between the effects of these two factors, empirically.
+-->
+
+
+
+
+## Aims of the present study
+
+<!-- In the present article, we aim at drawing attention to the processing stages -->
+<!-- [@donders_speed_1969; @sternberg_discovery_1969] that are involved in performing the SRTT. -->
+
+To separate the processes underlying the expression of implicit versus explicit knowledge,
+we manipulated explicit sequence knowledge by revealing, to a subset of participants,
+the sequence of stimulus and response locations.
+Orthogonally, we manipulated the possibility to switch to plan-based action control by using either
+probabilistic or mixed-deterministic stimulus materials.
+
+Participants who work on probabilistic materials and do not receive advance knowledge of the sequence may be considered our baseline condition,
+because such materials have been found to generate substantial sequence learning while participants remain largely implicit about the sequence [@jimenez_which_1999; @barth_assumptions_2019].
+It should therefore be possible to explore the processes involved in the expression of implicit sequence learning in this condition.
+Comparing this condition with participants who work on probabilistic materials but receive advance knowledge of the sequence,
+it is possible to explore whether explicit knowledge *per se* is expressed differently than implicit sequence learning,
+Comparing probabilistic and deterministic materials in fully explicit participants,
+it is possible to explore which processes are altered by switching to plan-based vs. stimulus-based action control.
+Finally, participants who did not receive advance knowledge of the sequence but worked on deterministic materials complete the picture:
+If deterministic materials indeed facilitate the acquisition of explicit sequence knowledge,
+these participants should also be able to switch to plan-based action control as soon as they acquired explicit sequence knowledge.
+
+<!-- To this end, we here develop a measurement model of SRTT performance that is -->
+<!-- aimed at decomposing learning effects at the processing stages of stimulus -->
+<!-- processing, response selection, and response execution that is tailored to the -->
+<!-- dynamic nature of the SRTT. -->

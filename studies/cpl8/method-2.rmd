@@ -1,0 +1,44 @@
+---
+title: "Untitled"
+author: "Marius Barth"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(digest::digest2int("cpl8"))
+```
+
+<!-- Invalid participants -->
+
+```{r}
+invalid_id <- c(32, 44, 96, 8, 21, 26, 34, 84)
+extra_id <- sample(1:120, size = 20)
+
+add_id <- c(invalid_id, extra_id)
+
+new_id <- 120 + seq_along(add_id)
+
+stimuli_folder <- file.path(rprojroot::find_rstudio_root_file(), "studies", "cpl8", "experimental-software", "stimuli")
+
+# acquisition
+file.copy(
+  from = file.path(stimuli_folder, paste0("acquisition-", add_id, ".csv"))
+  , to = file.path(stimuli_folder, paste0("acquisition-", new_id, ".csv"))
+)
+
+# instructions
+file.copy(
+  from = file.path(stimuli_folder, paste0("instructions-", add_id, ".txt"))
+  , to = file.path(stimuli_folder, paste0("instructions-", new_id, ".txt"))
+)
+
+# sequence
+file.copy(
+  from = file.path(stimuli_folder, paste0("sequence-", add_id, ".txt"))
+  , to = file.path(stimuli_folder, paste0("sequence-", new_id, ".txt"))
+)
+
+```
+
