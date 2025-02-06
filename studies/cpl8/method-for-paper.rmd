@@ -1,13 +1,4 @@
 
-<!-- todo: design-->
-
-The experiment followed a
-2 (*material*: probabilistic vs. mixed deterministic) $\times$
-2 (*instructions*: sequence concealed vs. sequence revealed) $\times$
-7 (*block pair*) $\times$
-3 (*stimulus-location regularity*: nonregular, regular, deterministic)
-design with repeated measures on the last two factors.
-
 ## Participants
 
 ```{r include = FALSE}
@@ -33,6 +24,24 @@ range_age <- paste(range(demographics$age), collapse = " and ")
 
 ## Materials and Procedure
 
+Participants worked on an SRTT consisting of 14 blocks with 144 trials each (for a total of 2,016 responses),
+the experimental software was written and run with *PsychoPy* [Version 2023.2.1, @peirce_psychopy2_2019].
+The experiment was run on 24" LCD monitors with a screen resolution of $1{,}920 \times 1{,}080\mathrm{px}$.
+The viewing distance was approximately 60cm.
+A horizontal sequence of six black squares (72px each) with mid-gray outlines were presented on a black screen. The distance between squares was 72px.
+Each screen location corresponded to one of six keys on a QWERTZ keyboard (from left to right Y, X, C, comma, period, minus), which were marked with red stickers.
+Participants were instructed to place their ring, middle, and index fingers of both hands on these keys.
+They were instructed to press the corresponding key whenever a square's color changed from black to mid-gray.
+On each trial of the SRTT, after a response-stimulus interval (RSI) of 250ms, the imperative stimulus was presented until a response was given.
+If a response was given before the stimulus had occurred,
+for 2sec,
+participants were reminded to press a key only after the stimulus had occurred.
+To obtain a significant proportion of error responses, we used a response deadline of 500msec.
+To allow participants to get used to the task, in the first block, we used response deadlines of 900, 800, 700, 600msec for 24 trials each before switching to 500msec for the remainder of the experiment.
+If the response deadline had been exceeded,
+a warning sign together with a reminder to answer more quickly, even at the expense of committing more errors, was presented for 1200msec.
+If the wrong key had been pressed, "wrong key" was presented for 300msec.
+
 For each participant anew, we generated a random permutation of the six possible stimulus locations which served as the six-item sequence.
 For participants in the *probabilistic sequence* conditions, stimulus locations followed this sequence with a probability of .6; otherwise, another stimulus location was randomly selected from a uniform distribution (excluding immediate repetitions).
 For participants in the *mixed-deterministic sequence* conditions, stimulus locations deterministically followed this six-item sequence in deterministic blocks;
@@ -40,25 +49,15 @@ in random blocks, stimulus locations were randomly selected from a uniform distr
 The order of random vs. deterministic blocks was randomly selected for these participants:
 Either blocks 1, 3, 5, 7, 9, 11, 13, or 2, 4, 6, 8, 10, 12, 14 were deterministic.
 Note that in random blocks, approximately 1/5 = 20% of stimuli followed the sequence by chance.
-Hence, all participants received stimulus materials that consisted of roughly 60% regular stimulus locations.
+Hence, all participants received stimulus materials that consisted of approximately 60% regular stimulus locations.
 
-Participants in the *sequence concealed* conditions did not receive any a-priori information that stimulus locations follow an underlying sequential structure.
+Prior to the SRTT,
+participants in the *sequence concealed* conditions did not receive any a-priori information that stimulus locations would follow an underlying sequential structure.
 By contrast, participants in the *sequence revealed* conditions were informed that stimulus locations followed such a regularity.
-If these participants worked on probabilistic materials, they were informed that on 60% of trials, the stimulus would be presented in regular location, and in 40% of trials, it would be randomly selected.
+If these participants worked on probabilistic materials, they were informed that on 60% of trials, the stimuli would be presented in a regular location, and in 40% of trials, they would be randomly selected.
 If these participants worked on mixed-deterministic materials, they were informed about the blocked structure of deterministic vs. random blocks, with exact information about which in blocks stimuli would follow the sequence and in which blocks stimulus locations would be randomly selected.
 Moreover, participants in the *sequence revealed* conditions were explicitly encouraged to try to use their advance sequence knowledge to optimize task performance.
 They were then informed about the exact six-item structure of their sequence (e.g., "2--1--6--5--3--4") and they performed 18 trials of the sequence (i.e. three repetitions of the full sequence).
-
-All participants worked on 14 blocks (144 trials each) of an SRTT.
-On each trial of the experiment, 
-the six possible stimulus locations were marked with grey outlines of rectangles on a black screen.
-After 250msec, the imperative stimulus was presented in one of the six stimulus locations.
-If a response was given before the stimulus had occurred,
-participants were reminded to only press a key after the stimulus had occurred for 2sec.
-To obtain a significant proportion of error responses, we used a response deadline of 500msec.
-To allow participants to get used to the task, in the first block, we used response deadlines of 900, 800, 700, 600msec for 24 trials each before switching to 500msec for the remainder of the experiment.
-If the response deadline had been exceeded, a warning sign together with feedback was presented for 1200msec.
-If the wrong key had been pressed, "wrong key" was presented for 300msec.
 
 Following the SRTT, we assessed explicit sequence knowledge in a post-experimental interview.
 Participants were told that they had been assigned to an experimental condition with or without a sequential structure,
@@ -67,15 +66,42 @@ If they believed that they were in a sequence condition, they were then asked to
 Finally, all participants were asked to reproduce the sequence in a forced-choice manner.
 Participants were then thanked and debriefed.
 
+## Design
+
+Between participants,
+we manipulated *material* (probabilistic vs. mixed deterministic) and
+*instructions* (sequence concealed vs. sequence revealed).
+Each participant worked on 14 SRTT blocks that were collapsed into seven *block pair*s.
+<!--
+The experiment followed a
+2 (*material*: probabilistic vs. mixed deterministic) $\times$
+2 (*instructions*: sequence concealed vs. sequence revealed) $\times$
+7 (*block pair*)
+3 (*stimulus-location regularity*: nonregular, regular deterministic)
+design with repeated measures on the last two factors.
+-->
+
+Within probabilistic materials, two trial types may be distinguished:
+*Nonregular* trials that did not follow the six-item sequence, and *regular* trials
+that did follow the sequence.
+With mixed-deterministic materials, each block pair was composed of a random block (where stimuli were randomly selected) and a deterministic block (where stimuli always followed the sequence). Hence, three trial types may be distinguished: *Nonregular* trials and *regular* trials from random blocks (remember that single transitions could follow the sequence by chance), and *deterministic* trials from deterministic blocks.
+
+
 ## Data preparation
 
-Because an SRTT with a response deadline can be a demanding task, we screened participant data for the proportion of too-slow responses and error rates: 
-We excluded participants who, in one of block pairs 2-7, exceeded an error rate of 50% or responded too slowly on more than 30% of trials.
+Because an SRTT with a response deadline can be a demanding task,
+we screened participant data for the proportion of too-slow responses and error rates: 
+We excluded participants who, in one of block pairs 2-7,
+exceeded an error rate of 50% or responded too slowly on more than 30% of trials.
 We also excluded data of two participants who did not finish the study and of five participants whose response times were not properly saved.
+After applying these exclusion criteria,
+25 participants remained in the mixed deterministic, sequence concealed group;
+29 participants remained in the probabilistic, sequence concealed group;
+26 participants remained in the mixed deterministic, sequence revealed group;
+and 26 participants remained in the probabilistic, sequence revealed group.
 
-Furthermore, trials that followed an erroneous response or a response that exceeded the response deadline were excluded from analyses.
+Trials that followed an erroneous response or a response that exceeded the response deadline (i.e., post-feedback trials) were excluded from analyses.
 We also excluded the first four trials of each block, and trials with responses faster than 20ms or slower than 2s.
-
 
 <!--
 - RSI = 250ms

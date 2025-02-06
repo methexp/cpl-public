@@ -77,8 +77,16 @@ data$context <- "random"
 data$context[
   (data$material_order == "regular first" & data$block_number %% 2 == 1) |
     (data$material_order == "random first" & data$block_number %% 2 == 0)
-] <- "regular"
-data$context[data$material == "probabilistic"] <- NA
+] <- "deterministic"
+data$context[data$material == "probabilistic"] <- "probabilistic"
+
+data$three_levels <- ifelse(
+  data$context == "deterministic"
+  , 3L
+  , as.integer(data$stimulus_location_regularity) + 1L
+)
+table(data$material, data$three_levels)
+data$three_levels <- factor(data$three_levels, levels = 1:3, c("nonregular", "regular", "deterministic"))
 
 library(tinylabels)
 

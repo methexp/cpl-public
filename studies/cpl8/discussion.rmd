@@ -35,9 +35,11 @@ the response-selection process was increasingly biased towards the rule-adhering
 Moreover, as suggested by higher drift rates for regular trials, evidence accumulation was faster for rule-adhering trials,
 indicating that either the information from the imperative stimulus or the stimulus-response rule was processed more efficiently.
 Nondecision time was invariant to stimulus-location regularity, but varied by response-location regularity (i.e., we found an effect of response competition),
-indicating an additional learning effect at the motor level.
+indicating an additional response-base learning effect that might be located at the motor level.
 To summarize, response selection appears to be involved in implicit sequence learning.
-This is in line with previous findings supporting S--R representations [@schwarb_generalized_2012], and suggests the involvement of a multidimensional system (i.e., combining stimulus and response dimensions).
+This is in line with previous findings supporting S--R representations [@schwarb_generalized_2012], 
+and suggests the involvement of a multidimensional system (i.e., combining stimulus and response dimensions)
+or a unidimensional learning system where spatial features of stimulus and response are jointly represented [@haider_feature_2020].
 In addition, we found evidence for response-competition bias toward the regular responses, suggesting the involvement of motor facilitation. 
 As the present study confounded effectors with response locations, it could be explained by both effector-specific or general effects [@willingham_implicit_2000; @verwey_effector_2005]. 
 Future research is needed to separate these two factors and their effects on the response-competition parameter.
@@ -57,10 +59,11 @@ This parameter pattern suggests that participants engaged in plan-based task per
 using their explicit knowledge to anticipate the stimulus and prepare their response.
 This anticipation was so successful (i.e., the starting point was so strongly shifted towards the *regular* boundary) that participants needed to extract only very little information from the stimulus during the decision process.
 (The present finding of no effect on drift rate in the deterministic condition should therefore be interpreted with caution:
-It may simply reflect the fact that, in our study, virtually no information needed to be sampled from the stimulus.)
+It may simply reflect the fact that, in our study, virtually no information had to be sampled from the stimulus.)
 <!-- may therefore reflect either the absence of an effect or the lack of sufficient data to estimate this parameter) -->
 Because plan-based performance speeded up participants' responses in the deterministic blocks,
 they could afford to increase their response caution (i.e., boundary separation) in these blocks.
+<!--satisfy Hilde's references: Haider et al 2011, Rose et al 2010 -->
 
 <!-- The model-based analyses revealed that this effect is attributable to a reduction in nondecision time, -->
 <!-- a finding which we interpret as evidence that stimulus detection and encoding are largely skipped: Participants already know where to look for the next stimulus, -->
@@ -90,7 +93,7 @@ However, we found a clear effect of instructions on error rates for nonregular t
 indicating that at least some participants tried to implement their sequence knowledge while performing the task.
 
 Instead of reflecting the absence of implicit learning effects on stimulus detection or encoding,
-the lack of an effect on nondecision time may point to the fact that both stimulus detection and encoding were relatively easy in our experiment (i.e., a floor effect).
+the lack of an effect on nondecision time may point to the fact that both stimulus detection and encoding were relatively easy in our experiment (i.e., that we observed a floor effect).
 Alternatively, such a learning effect may truly be nonexistent. Earlier findings of 
 purely observational [@howard_serial_1992; @song_perceptual_2008]
 or parallel learning of stimulus locations [@mayr_spatial_1996]
@@ -103,9 +106,10 @@ that is expressed at the response-selection stage.
 
 The DDM has been widely successful in capturing and explaining performance in many speeded-choice tasks,
 and we therefore deem it an excellent starting point for modelling performance in the SRTT.
-However, it makes a set of processing assumptions.
+However, it makes a set of processing assumptions that might be violated in a specific application.
 Most importantly, it assumes that stimulus encoding, response selection, and response execution are organized sequentially,
-an assumption that might be violated in sequence learning, given that parallel architectures have been proposed for motor-behavior tasks such as the SRTT [e.g., @logan_toward_1988; @verwey_cognitive_2015].
+an assumption that might be violated in sequence learning.
+This is particularly relevant because parallel architectures have been proposed for motor-behavior tasks such as the SRTT [e.g., @logan_toward_1988; @verwey_cognitive_2015].
 Hence, unless the model receives further validation for SRT tasks,
 the present set of findings may be alternatively accounted for by theories involving parallel processes.
 
@@ -123,7 +127,7 @@ Such extended designs provide the opportunity to validate the DDM's application 
 and to further pin down the interpretation of the observed parameter changes:
 To clarify how to interpret the response-competition effect that we found for stimulus-based implicit learners,
 it could be tested whether motor sequences, but not stimulus sequences selectively influence this parameter.
-Moreover, the effector-specificity of this effect could be investigated using a transfer task where effectors are changed but response locations are kept constant [e.g., @verwey_effector_2005].
+Moreover, the effector-specificity of this effect could be investigated using a transfer task where effectors are changed but response locations are kept constant [c.f., @verwey_effector_2005].
 If sequence learning of stimulus locations guides spatial attention on the screen [as suggested by @mayr_spatial_1996],
 it should selectively influence stimulus detection (i.e., nondecision time).
 In the present work, we did not find such an effect, but stimulus detection was very easy;
@@ -153,6 +157,7 @@ In the present work, we used a regression approach at the group-level means to m
 Most recently, considerable efforts have been made to model both gradual and sudden shifts in parameter estimates [@schumacher_validation_2024; @gunawan_time-evolving_2022].
 Such non-stationary models may be used to model individual learning curves at the level of a single transition,
 providing a principled on-line measure of a switch to plan-based action control in the SRTT.
+<!--to do: Hilde thinks it has to be gradual--> 
 Moreover, these methods allow to investigate whether *implicit* sequence learning is indeed a gradual or a sudden phenomenon [c.f., @musfeld_repetition_2023].
 For a regression-based approach, recent advances in Bayesian estimation carry the potential to facilitate such endeavors:
 @henrich_seven-parameter_2023 implemented the seven-parameter DDM in Stan [@carpenter_stan_2017],
@@ -171,9 +176,9 @@ unidimensional accounts that assume that features from the same abstract dimensi
 
 In addition, we find evidence for response competition that is independent of response selection.
 More research is needed to investigate whether this effect represents effector-specific motor learning [@verwey_effector_2005] or is linked to abstract response categories [@willingham_implicit_2000].
-Supporting the recent tests of the unexpected-event hypothesis [@lustig_interplay_2022],
+Supporting the recent tests of the Unexpected Event Hypothesis [@lustig_interplay_2022],
 strong decreases in response time are readily accounted for as a consequence of a switch to plan-based action control.
-This switch is possible only after the sequence already has become explicit,
+This switch is possible only after the sequence has become explicit,
 and only if the structure of the task makes such a change beneficial for performance.
 When implemented, such a strategy shift results in an anticipation of the next response even before the imperative stimulus is presented, allowing participants to largely bypass stimulus processing [as reflected in reduced interference effects in Stroop and Simon tasks, @haider_old_2011; @koch_anticipatory_2007].
 

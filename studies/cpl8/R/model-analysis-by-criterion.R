@@ -2,7 +2,10 @@
 palette(wesanderson::wes_palette("Zissou1", n = 3))
 
 library(cplmodels)
-models <- readRDS("~/git/mariusbarth/cpl/studies/cpl8/model_objects/phdm_200-by-interview.rds")
+library(qs)
+models <- qread(
+  file.path(rprojroot::find_rstudio_root_file(), "studies", "cpl8", "model_objects", "phdm_200-by-interview.qs")
+)
 # models <- Filter(Negate(is.null), models)
 
 # x <- models[[2L]]

@@ -18,14 +18,14 @@ editor_options:
 knitr::opts_chunk$set(
   message = FALSE
   , warning = FALSE
-  , cache = TRUE
+  , cache = FALSE
   , echo = FALSE
 )
 knitr::opts_knit$set(global.par = TRUE)
 options(mc.cores = parallel::detectCores()) # for brms
 
 library(afex)
-library(performance)
+# library(performance)
 library(ggeffects)
 library(papaja)
 library(runjags)
@@ -304,14 +304,16 @@ model <- lm(
   , data = subset(data, !previous_error & ! previous_deadline_exceeded & sid ==  122)
 )
 summary(model)
-ggpredict(model, terms = ~ tid + stimulus_location_regularity + error) |> plot(rawdata = TRUE)
+ggpredict(model, terms = ~ tid + stimulus_location_regularity + error) |> plot(show_data = TRUE)
 ```
 
-
+Before applying the drift-diffusion model,
+we first analyzed response times and error rates from the SRTT
+and the responses from the post-experimental interview
+with linear models.
 
 ## Response times and error rates
 
-We first analyzed response times and error rates.
 For ease of interpretation, we report three separate analyses for both RTs and errors: 
 One for the data from the probabilistic groups,
 and one each for the deterministic and random blocks from the mixed-deterministic groups.
@@ -321,13 +323,6 @@ Errors that follow the regularity of motor responses, and errors that do not fol
 
 ```{r results= 'hide'}
 data <- within(data, {
-  three_levels <- ifelse(
-    material == "probabilistic"
-    , as.integer(!stimulus_location_regularity) + 2L
-    , as.integer(!stimulus_location_regularity) + 1L + as.integer(context == "random")
-  )
-  three_levels <- factor(three_levels, levels = 3:1, labels = c("nonregular", "regular", "deterministic"))
-  
   stimulus_location_regular <- factor(stimulus_location_regularity, levels = c(F, T), labels = c("nonregular", "regular"))
   error_numeric <- as.numeric(error) |> 
     label_variables("Error rate")
@@ -608,7 +603,6 @@ ggpredict(rt_model, terms = ~ tid + regularity + instructions + material) |> plo
 par(las = 1, font.main = 1, mfrow = c(1, 2))
 variable_label(data$term) <- ""
 variable_label(data$instructions) <- "Instructions"
-# data$three_levels
 
 error_data <- subset(
   data
@@ -620,7 +614,13 @@ error_data <- subset(
     material == "probabilistic"
 )
 
-rt_data <- subset(error_data, !error)
+rt_data <- subset(error_data, !error) |>
+  aggregate(
+    x = response_time ~ sid + block_pair + term + instructions + stimulus_location_regularity
+    , FUN = mean
+  ) |>
+  label_variables(response_time = variable_label(data$response_time))
+
 
 # Plots ----
 apa_lineplot(
@@ -645,7 +645,7 @@ apa_lineplot(
 # Response times ----
 anova_rt_probabilistic <- aov_4(
   response_time ~ instructions + (block_pair * stimulus_location_regularity | sid)
-  , data = rt_data
+  , data = agg
   , fun_aggregate = mean
 ) |>
   apa_print()
@@ -665,7 +665,7 @@ anova_rt_probabilistic <- aov_4(
 anova_rt_probabilistic_nonregular <- aov_4(
   response_time ~ instructions + (block_pair | sid)
   , data = subset(rt_data, !stimulus_location_regularity)
-  , fun_aggregate = mean
+  # , fun_aggregate = mean
 ) |>
   apa_print()
 
@@ -825,11 +825,11 @@ These above effects were qualified by a significant three-way interaction,
 and a two-way interaction of *instructions* with *stimulus-location regularity*,
 `r anova_errors_probabilistic$full_result$instructions_stimulus_location_regularity`.
 <!-- Error rates follow-up -->
-To disentangle these interactions, we analyzed regular and nonregular trials separately.
+To disentangle these interactions, we analyzed regular and nonregular trials, separately.
 Analyzing only regular trials, we found only
 a main effect of *block pair*,
 `r anova_errors_probabilistic_regular$full_result$block_pair`,
-reflection increasing error rates over blocks,
+reflecting increasing error rates over blocks,
 all other $p\mathrm{s} \geq .348$.
 By contrast, analyzing only nonregular trials, we found
 a main effect of *block pair*,
@@ -842,7 +842,7 @@ reflecting the descriptive observation that the difference between conditions in
 was not significant,
 `r anova_errors_probabilistic_nonregular$full_result$instructions_block_pair`.
 
-To summarize, for participants working on probabilistic materials, we found robust sequence learning in both RTs and error rates.
+To summarize, for participants who worked on probabilistic materials, we found robust sequence learning in both RTs and error rates.
 Revealing the sequence to such participants had only small effects on RTs:
 Responses were only descriptively faster for regular trials.
 However, error rates were higher for nonregular trials.
@@ -862,7 +862,7 @@ error_data <- subset(
     !previous_deadline_exceeded & 
     # response_time > .02 &
     response_time < 2 &
-    context == "regular")
+    context == "deterministic")
 rt_data    <- subset(error_data, !error)
 
 # Response times
@@ -924,7 +924,7 @@ reflecting decreasing RTs over blocks.
 We also found a main effect of *instructions*,
 `r anova_rt_deterministic$full_result$instructions`, 
 RTs were faster in the *sequence-revealed* condition.
-Although, descriptively, the RT difference between sequence concealed vs. revealed conditions decreased,
+Although, descriptively, the RT difference between sequence concealed compared with sequence revealed conditions decreased,
 these main effects were not qualified by an interaction,
 `r anova_rt_deterministic$full_result$instructions_block_pair`.
 
@@ -936,8 +936,9 @@ Neither the main effect of *instructions*,
 nor the interaction were significant,
 `r anova_errors_deterministic$full_result$instructions_block_pair`.
 
-We conclude that, in the deterministic blocks, participants were well able to use their explicit knowledge to improve task performance.
-Although participants in the sequence-concealed condition have acquired substantial amounts of sequence knowledge (likely explicit knowledge; see the results of the post-experimental interview reported below), the speed with which they performed the task did not reach that of participants in the sequence-revealed condition (while both reached comparable levels of accuracy).
+We conclude that, in deterministic blocks, participants were well able to use their explicit knowledge to improve task performance.
+Although participants in the sequence concealed condition acquired substantial amounts of sequence knowledge (likely explicit knowledge; see the results of the post-experimental interview reported below), the speed with which they performed the task did not reach that of participants in the sequence-revealed condition (while both reached comparable levels of accuracy).
+
 
 ### Random blocks of mixed-deterministic materials
 
@@ -951,24 +952,11 @@ error_data <- subset(
     response_time < 2 &
     context == "random"
 )
-rt_data    <- subset(error_data, !error)
+rt_data <- subset(error_data, !error)
 
-
-
-# apa_lineplot(
-#   data = tmp
-#   , id = "sid"
-#   , dv = "response_time"
-#   , factors = c("block_pair", "instructions", "stimulus_location_regularity")
-#   , dispersion = wsci
-#   , ylim = c(0.3, .5)
-#   , jit = .03
-#   , args_points = list(bg = c("indianred2", "skyblue4"))
-#   , main = c("Nonregular stimuli", "Regular stimuli")
-# )
 par(mfrow = c(1, 2))
-apa_lineplot(
-  subset(rt_data, block_pair > 1)
+apa_factorial_plot(
+  subset(rt_data, block_pair > 0)
   , id = "sid"
   , factors = c("block_pair", "term")
   , dv = "response_time"
@@ -976,76 +964,20 @@ apa_lineplot(
   , args_points = list(bg = 1:4, pch = rep(22:23, times = 2))
   , args_error_bars = list(length = .02)
   , ylim = c(.3, .6)
+  , plot = c("points", "lines", "swarms", "error_bars")
 )
+
 
 anova_rt_random <- aov_4(
   formula = response_time ~ instructions + (block_pair * stimulus_location_regularity | sid)
-  , data = subset(rt_data, block_pair > 1)
+  , data = subset(rt_data, block_pair > 0)
   , fun_aggregate = mean
 ) |>
   apa_print()
-# aov_4(
-#   formula = response_time ~ instructions + (block_pair * stimulus_location_regularity | sid)
-#   , data = rt_data
-#   , fun_aggregate = mean
-# ) |> 
-#   ggeffects::ggpredict(terms = ~ instructions + stimulus_location_regularity) |>
+
+
+# ggpredict(anova_rt_random, terms = ~ instructions + stimulus_location_regularity) |>
 #   plot()
-
-agg_rt <- aggregate(response_time ~ stimulus_location_regularity + block_pair + instructions + sid, data = rt_data, FUN = mean) |>
-  within({
-    stimulus_location_regularity <- factor(stimulus_location_regularity)
-    block_pair <- factor(block_pair)
-    instructions <- factor(instructions)
-    sid <- factor(sid)
-  })
-
-baseline <- lmBF(
-  formula = response_time ~ instructions * stimulus_location_regularity * block_pair + sid
-  , whichRandom = "sid"
-  , data = agg_rt
-)
-instructions <- lmBF(
-  formula = response_time ~ stimulus_location_regularity * block_pair + sid
-  , whichRandom = "sid"
-  , data = agg_rt
-)
-instructions_main <-lmBF(
-  formula = response_time ~ instructions + stimulus_location_regularity * block_pair + sid
-  , whichRandom = "sid"
-  , data = agg_rt
-)
-instructions / baseline
-instructions /instructions_main
-# agg <- aggregate(response_time ~ instructions + block_pair + stimulus_location_regularity + sid, data = rt_data, FUN = mean, drop = FALSE)
-# lme_rt <- lmer(
-#   formula = response_time ~ instructions * block_pair * stimulus_location_regularity + (block_pair * stimulus_location_regularity | sid)
-#   , data = rt_data |>
-#     within({
-#       block_pair <- factor(block_pair)
-#       stimulus_location_regualrity <- factor(stimulus_location_regularity)
-#       instructions <- factor(instructions)
-#       contrasts(block_pair)                   <- "contr.sum"
-#       contrasts(stimulus_location_regualrity) <- "contr.sum"
-#       contrasts(instructions)                 <- "contr.sum"
-#     })
-#   , method = "S"
-# )
-# car::Anova(lme_rt, type = 3)
-
-# tmp$sid <- factor(tmp$sid)
-# tmp$stimulus_location_regularity <- factor(tmp$stimulus_location_regularity)
-# tmp$instructions <- factor(tmp$instruction)
-# tmp$block_pair <- factor(tmp$block_pair)
-# agg <- aggregate(response_time ~ stimulus_location_regularity + instructions + block_pair + sid, data = tmp, FUN = mean)
-# aov_out <- anovaBF(
-#   formula = response_time ~ instructions * stimulus_location_regularity * block_pair + sid
-#   , whichRandom = "sid"
-#   , whichModels = "top"
-#   , data = agg
-#   , progress = FALSE
-# )
-# # aov_out |> apa_print() |> apa_table()
 
 # Error rates ----
 apa_lineplot(
@@ -1070,21 +1002,6 @@ aov_4(
 ) |>
   apa_print()
 
-
-# aov_4(
-#   formula = error_numeric ~ instructions + (stimulus_location_regularity * block_pair | sid)
-#   , data = error_data
-# ) |>
-#   ggeffects::ggpredict(terms = ~ instructions + stimulus_location_regularity) |>
-#   plot()
-# aov_4(
-#   formula = error_numeric ~ instructions + (block_pair | sid)
-#   , data = subset(error_data, stimulus_location_regularity)
-# )
-# aov_4(
-#   formula = error_numeric ~ instructions + (block_pair | sid)
-#   , data = subset(error_data, !stimulus_location_regularity)
-# )
 aov_4(
   formula = error_numeric ~ (stimulus_location_regularity * block_pair | sid)
   , data = subset(error_data, instructions == "sequence concealed")
@@ -1092,33 +1009,6 @@ aov_4(
 aov_4(
   formula = error_numeric ~ (stimulus_location_regularity * block_pair | sid)
   , data = subset(error_data, instructions == "sequence revealed")
-)
-agg_errors <- aggregate(
-  error ~ stimulus_location_regularity + block_pair + instructions + sid
-  , data = error_data
-  , FUN = mean
-) |>
-  within({
-    stimulus_location_regularity <- factor(stimulus_location_regularity)
-    block_pair <- factor(block_pair)
-    instructions <- factor(instructions)
-    sid <- factor(sid)
-  })
-
-baseline <- lmBF(
-  formula = error ~ instructions * stimulus_location_regularity * block_pair + sid
-  , whichRandom = c("stimulus_location_regularity", "block_pair", "sid")
-  , data = agg_errors
-)
-instructions <- lmBF(
-  formula = error ~ stimulus_location_regularity * block_pair + sid
-  , whichRandom = c("stimulus_location_regularity", "block_pair", "sid")
-  , data = agg_errors
-)
-three_way <- lmBF(
-  formula = error ~ instructions + instructions:stimulus_location_regularity + instructions:block_pair + stimulus_location_regularity * block_pair + sid
-  , whichRandom = c("stimulus_location_regularity", "block_pair", "sid")
-  , data = agg_errors
 )
 ```
 
@@ -1129,16 +1019,19 @@ Analyzing RTs for correct responses using a
 2 (*stimulus-location regularity*: regular vs. nonregular) $\times$
 7 (*block pair*) ANOVA, we found a main effect of *block pair*, 
 `r anova_rt_random$full_result$block_pair`,
-with RTs decreased over blocks.
+RTs decreased over blocks.
 We also found a main effect of *stimulus-location regularity*,
 `r anova_rt_random$full_result$stimulus_location_regularity`,
 with faster responses for regular (vs. nonregular) stimulus locations.
 This effect of regularity indicates that sequence learning was expressed in these blocks.
 The interaction of *block pair* and *stimulus-location regularity* was not significant,
 `r anova_rt_random$full_result$block_pair_stimulus_location_regularity`.
-We did not find an effect of revealing explicit sequence knowledge on RTs:
-All model terms including *instructions* (main effect and interactions) were not significant,
-all $p\mathrm{s} \geq .161$.
+The main effect of *instructions* was not significant,
+`r anova_rt_random$full$instructions`.
+*Instructions* entered into an interaction with *stimulus-location regularity*,
+`r anova_rt_random$full$instructions_stimulus_location_regularity`:
+The RT advantage for regular stimulus locations was bigger if the sequence had been revealed.
+All other $p\mathrm{s} \geq .420$.
 
 ```{r eval = FALSE}
 library(brms)
@@ -1188,6 +1081,46 @@ but also in the random blocks (where only stimulus-based action control is adapt
 <!-- (1) this learning effect is implicit in nature or -->
 <!-- (2) participants in the sequence-concealed condition instantly acquired as much SL as participants in the sequence-revealed condition. -->
 <!-- Explanation (2) is unlikely, given that participants in the sequence-revealed condition have a stable advantage in deterministic contexts. -->
+
+
+```{r results = 'hide'}
+error_data <- subset(
+  data
+  , tix > 4L & 
+    !previous_error & 
+    !previous_deadline_exceeded & 
+    response_time > .02 &
+    response_time < 2 &
+    context != "probabilistic"
+)
+rt_data <- subset(error_data, !error)
+
+par(mfrow = c(1, 2))
+# apa_lineplot(
+#   subset(rt_data, block_pair > 0)
+#   , id = "sid"
+#   , factors = c("block_pair", "context", "instructions")
+#   , dv = "response_time"
+#   # , jit = .3
+#   , args_points = list(bg = 1:4, pch = rep(22:23, times = 2))
+#   , args_error_bars = list(length = .02)
+#   , ylim = c(.0, .6)
+# )
+
+anova_rt_mixed_deterministic <- aov_4(
+  formula = response_time ~ instructions + (block_pair * context | sid)
+  , data = subset(rt_data, block_pair > 1)
+  , fun_aggregate = mean
+) |>
+  apa_print()
+
+anova_errors_mixed_deterministic <- aov_4(
+  formula = response_time ~ instructions + (block_pair * context | sid)
+  , data = subset(error_data, block_pair > 1)
+  , fun_aggregate = mean
+) |>
+  apa_print()
+```
 
 
 
@@ -1288,7 +1221,7 @@ which might be explained with differences in processing mode, or with different 
 
 ## **Faster** errors through sequence learning?
 
-```{r fig.cap = "Response times for error responses. Error bars represent 95% within-subjects confidence intervals."}
+```{r rt-errors, fig.cap = "Response times for error responses. Error bars represent 95% within-subjects confidence intervals."}
 
 anova_rt_model <- aov_4(
   formula = response_time ~ material + instructions + (block_pair * response_regularity | sid)
@@ -1327,7 +1260,7 @@ apa_lineplot(
 # ggemmeans(anova_rt_model, terms = ~ material + response_regularity) |> plot()
 ```
 
-We also analyzed response times for error responses (again excluding post-error trials) and
+We also analyzed response times (see Figure\ \@ref(fig:rt-errors)) for error responses (again excluding post-error trials) and
 <!-- ***done: perhaps drop this plot? or aggregate into first- vs. second half of blocks?*** -->
 found a main effect of  *response regularity*,
 `r anova_rt$full_result$response_regularity`,
@@ -1626,13 +1559,20 @@ for (i in names(recalled_seq)) {
 
 free_recall <- aggregate(free_recall_correct ~ material + instructions + sid, data = forced_choice, FUN = mean)
 
-par(mfrow = c(1, 1))
+# par(mfrow = c(1, 1))
 # apa_beeplot(
 #   data = free_recall
 #   , dv = "free_recall_correct"
 #   , id = "sid"
 #   , factors = c("material", "instructions")
 # )
+
+anova_free_recall_model <- aov_4(free_recall_correct ~ material * instructions + (1 | sid), data = free_recall)
+decriptives_free_recall <- emmeans(anova_free_recall_model, specs = ~ material + instructions) |>
+  apa_print()
+
+anova_free_recall <- anova_free_recall_model |>
+  apa_print()
 
 
 agg <- aggregate(correct ~ material + instructions + sid, data = forced_choice, FUN = sum)
@@ -1746,7 +1686,7 @@ names(apa_props) <- papaja:::sanitize_terms(rownames(props))
 # prop.test(x = proportions$x, n = proportions$n)
 ```
 
-Participants were asked whether they believed they have been working on materials containing a sequence (and to name that sequence); and then were presented with each stimulus and asked to select the next one in the sequence (i.e., forced choice). 
+Participants were asked whether they believed they had been working on materials containing a sequence (and to name that sequence); and then were presented with each stimulus and asked to select the next one in the sequence (i.e., forced choice). 
 We first analyzed how many participants indicated that they believed that they were in a sequenced condition.
 For mixed-deterministic materials,
 `r apa_props$mixed_deterministic_sequence_revealed` participants in the sequence-revealed condition indicated that they were in a sequenced condition; 
@@ -1754,6 +1694,18 @@ For mixed-deterministic materials,
 For participants who worked on probabilistic materials,
 only `r apa_props$probabilistic_sequence_revealed` participants in the sequence-revealed condition 
 and `r apa_props$probabilistic_sequence_concealed` participants in the sequence-concealed condition believed that they had worked on sequenced materials.
+
+Regarding free-recall performance, we analyzed the number of correctly generated transitions using a
+2 (*material*: probabilistic vs. mixed deterministic) $\times$ 
+2 (*instructions*: sequence concealed vs. sequence revealed) ANOVA
+that revealed a main effect of *material*,
+`r anova_free_recall$full$material`,
+a main effect of *instructions*,
+`r anova_free_recall$full$instructions`,
+and no interaction,
+`r anova_free_recall$full$material_instructions`.
+Participants who worked on mixed-deterministic materials recalled more transitions than those who worked on probabilistic materials.
+Also, revealing the sequence to participants resulted in more correctly-recalled transitions.
 
 Regarding forced-choice performance, we analyzed the proportion of correct responses using a
 2 (*material*: probabilistic vs. mixed deterministic) $\times$ 
@@ -1838,12 +1790,10 @@ rt_data <- subset(error_data, !error)
 <!-- ***done: drop the unlabelled figures 10 and 11 (rts and errors, by explicit knowledge classification)*** -->
 
 
-## Model-based analyses
-
-
+## Diffusion model analyses
 
 ```{r results = 'hide'}
-models <- readRDS("studies/cpl8/model_objects/phdm_200.rds")[c(2, 4, 1, 3)]
+models <- qs::qread("studies/cpl8/model_objects/phdm_200.qs")[c(2, 4, 1, 3)]
 main <- gsub(names(models), pattern = ".", replacement = "\n", fixed = TRUE)
 names(models) <- papaja:::sanitize_terms(names(models))
 names(models)
@@ -1854,7 +1804,7 @@ palette(wesanderson::wes_palette("Zissou1", n = 3, type = "continuous"))
 In a next step, we applied the diffusion model to the present data.
 We first report parameter estimates for the whole sample of participants.
 In a second step, we contrasted the parameters involved in the expression of implicit knowledge from those reflecting the expression of explicit knowledge in a plan-based fashion. 
-To this end, we report modelling results for a subset of participants who (1) worked on probabilistic materials, were not revealed any sequence knowledge, and, according to the post-experimental interview, remained fully implicit about the sequence, and (2) for a subset who worked on mixed-deterministic materials, were instructed about the sequence, and reported comprehensive explicit sequence knowledge.
+To this end, we report modelling results for a subset of participants who (1) worked on probabilistic materials, were not revealed any sequence knowledge, and, according to the post-experimental interview, remained fully implicit about the sequence, and (2) for a subset of participants who worked on mixed-deterministic materials, were instructed about the sequence, and reported comprehensive explicit sequence knowledge.
 
 ### Whole sample
 
@@ -1870,7 +1820,7 @@ lapply(BFs, `[[`, "table")
 ```
 
 
-(ref:starting-point-cap) Starting point of the diffusion process. Error bars represent $2\cdot\mathit{SE}$.
+(ref:starting-point-cap) Starting point of the diffusion process. Points represent posterior means of the group-level parameters $\mu^{(\beta)}_{kb}$.
 
 ```{r starting-point, fig.width = 12, fig.height = 4, fig.cap = "(ref:starting-point-cap)", results = "hide"}
 par(mfrow = c(1, 4))
@@ -1901,31 +1851,24 @@ get_plot_data <- function(x, pars) {
     y
 }
 
-plot_data <- lapply(models, get_plot_data, pars = "beta")
-
 off <- Map(
-  f = function(data, main, plot_legend) {
-    apa_factorial_plot(
-      data = data
-      , id = "id"
-      , dv = "value"
-      , factors = c("block_pair", "term")
-      , dispersion = se2
-      , ylim = c(0, 1)
+  f = function(x, main, plot_legend) {
+    plot(
+      x
+      , pars = "beta"
       , main = main
-      , plot = c("points", "error_bars", "lines")
+      , xlab = "Block pair"
+      , ylab = expression("Relative starting point"~beta)
+      , ylim = c(0, 1)
       , args_points = list(bg = 1:3)
-      , args_swarms = list(pch = 21, cex = .005, lwd = 0)
-      , args_error_bars = list(length = .02)
       , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+      , args_violins = list(border = 1:3)
     )
-    
   }
-  , data = plot_data
+  , x = models
   , main = main
-  , plot_legend = c(T, F, T, F)
+  , plot_legend = c(TRUE, FALSE, TRUE, FALSE)
 )
-
 ```
 
 The *starting point* parameter captures information that is available *before* the evidence accumulation process starts (i.e., before the imperative stimulus is presented).
@@ -1952,36 +1895,55 @@ sequence revealed: `r BFs$mixed_deterministic_sequence_revealed$stat[[2]]`).
 
 
 
+
 #### Drift rate
 
-(ref:drift-rate-cap) Average evidence accumulation (drift rate). Error bars represent $2\cdot\mathit{SE}$.
+(ref:drift-rate-cap) Average evidence accumulation (drift rate).  Points represent posterior means of the group-level parameters $\mu^{(\nu)}_{kb}$.
 
 ```{r drift-rate, fig.width = 12, fig.height = 4, fig.cap = "(ref:drift-rate-cap)"}
 par(mfrow = c(1, 4))
-se2 <- function(x, na.rm = TRUE) {sd(x, na.rm = na.rm) * 2}
-
-plot_data <- lapply(models, get_plot_data, "nu")
+# se2 <- function(x, na.rm = TRUE) {sd(x, na.rm = na.rm) * 2}
+# 
+# plot_data <- lapply(models, get_plot_data, "nu")
+# off <- Map(
+#   f = function(data, main, plot_legend) {
+#     apa_factorial_plot(
+#       data = data
+#       , id = "id"
+#       , dv = "value"
+#       , factors = c("block_pair", "term")
+#       , dispersion = se2
+#       , ylim = c(2, 6)
+#       , main = main
+#       , plot = c("points", "violins", "lines")
+#       , args_points = list(bg = 1:3)
+#       , args_error_bars = list(length = .02)
+#       , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+#     )
+#     
+#   }
+#   , data = plot_data
+#   , main = main
+#   , plot_legend = c(T, F, T, F)
+# )
 
 off <- Map(
-  f = function(data, main, plot_legend) {
-    apa_factorial_plot(
-      data = data
-      , id = "id"
-      , dv = "value"
-      , factors = c("block_pair", "term")
-      , dispersion = se2
-      , ylim = c(2, 6)
+  f = function(x, main, plot_legend) {
+    plot(
+      x
+      , pars = "nu"
       , main = main
-      , plot = c("points", "error_bars", "lines")
+      , xlab = "Block pair"
+      , ylab = expression("Drift rate"~delta)
+      , ylim = c(2, 6)
       , args_points = list(bg = 1:3)
-      , args_error_bars = list(length = .02)
       , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+      , args_violins = list(border = 1:3)
     )
-    
   }
-  , data = plot_data
+  , x = models
   , main = main
-  , plot_legend = c(T, F, T, F)
+  , plot_legend = c(TRUE, FALSE, TRUE, FALSE)
 )
 ```
 
@@ -2021,32 +1983,34 @@ However, in deterministic blocks, participants were able to exploit the speedup 
 (sequence concealed: `r BFs$mixed_deterministic_sequence_concealed$stat[[2]]`,
 sequence revealed `r BFs$mixed_deterministic_sequence_revealed$stat[[2]]`).
     
-(ref:boundary-separation-cap) Boundary separation (response caution). Error bars represent $2\cdot\mathit{SE}$. 
+(ref:boundary-separation-cap) Boundary separation (response caution). Points represent posterior means of the group-level parameters $\mu^{(\beta)}_{kb}$.
+
 
 ```{r boundary-separation, fig.width = 12, fig.height = 4, fig.cap = "(ref:boundary-separation-cap)"}
 par(las = 1, font.main = 1, mfrow = c(1, 4))
 palette(wesanderson::wes_palette("Zissou1", n = 5, type = "continuous"))
 
-se2 <- function(x, ...) 2 * sd(x, ...)
+off <- Map(
+  f = function(x, main, plot_legend, cols) {
+    cols <- if(any(x$factors$alpha == "context")) c(5, 2) else 2
+    plot(
+      x
+      , pars = "alpha"
+      , main = main
+      , xlab = "Block pair"
+      , ylab = expression("Boundary separation"~alpha)
+      , ylim = c(.5, 1.1)
+      , args_points = list(bg = cols)
+      , args_violins = list(border = cols)
+      , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+    )
+  }
+  , x = models
+  , main = main
+  , plot_legend = c(TRUE, FALSE, TRUE, FALSE)
+)
 
-plot_data <- lapply(models, get_plot_data, "nu")
 
-for (i in seq_along(models)) {
-  plot(
-    models[[i]]
-    , pars = "alpha"
-    , args_points = list(bg = c(2, 5))
-    , args_swarm = list(cex = .01, bg = c(2, 5), lwd = 0, pch = 21)
-    , ylim = c(.5, 1.1)
-    , main = main[i]
-    , xlab = "Block pair"
-    , ylab = expression("Boundary separation"~alpha)
-    , dispersion = se2
-    , args_error_bars = list(length = .02)
-    , args_legend = list(title = "Block", legend = c("random", "deterministic"), x = "topright", plot = (i == 3))
-    , plot = c("points", "error_bars", "lines")
-  )
-}
 ```
 
 
@@ -2062,54 +2026,52 @@ lapply(BFs, `[[`, "table")
 In the diffusion model, the *nondecision time* parameter subsumes all processes (i.e., perceptual and motor) occurring before and after the response-selection decision.
 
 Figure\ \@ref(fig:nondecision-time) shows nondecision times as a function of stimulus regularity.
-With probabilistic materials, we find evidence for the absence of sequence-specific effects,
+With probabilistic materials, we found evidence for the absence of sequence-specific effects,
 with `r BFs$probabilistic_sequence_concealed$stat[[2]]` in the sequence-concealed condition,
 and  `r BFs$probabilistic_sequence_revealed$stat[[2]]` in the sequence-revealed condition.
-We therefore conclude that, if participants are performing the SRTT in a stimulus-based fashion,
-it is neither stimulus detection nor encoding that mediate the expression of sequence learning.
+We therefore conclude that, if participants performed the SRTT in a stimulus-based fashion,
+it was neither stimulus detection nor encoding that mediated the expression of sequence learning.
 
-A similar pattern can be observed in participants who worked on mixed-deterministic materials:
-When considering random blocks, we find evidence for an absence of a difference in nondecision time attributable to sequence learning,
+A similar pattern could be observed in participants who worked on mixed-deterministic materials:
+When considering random blocks, we found evidence for an absence of a difference in nondecision time attributable to sequence learning,
 with `r BFs$mixed_deterministic_sequence_concealed$stat[[2]]` in the sequence-concealed condition,
 and  `r BFs$mixed_deterministic_sequence_revealed$stat[[2]]` in the sequence-revealed condition.
 
-By contrast, with mixed-deterministic materials, we find strong evidence for a rapid decrease
+By contrast, with mixed-deterministic materials, we found strong evidence for a rapid decrease
 in nondecision time for deterministic compared with random materials,
 with `r BFs$mixed_deterministic_sequence_concealed$stat[[3]]` in the sequence-concealed condition,
 and  `r BFs$mixed_deterministic_sequence_revealed$stat[[3]]` in the sequence-revealed condition.
-We interpret this finding as indicative that a switch to plan-based action control allows participants
+We interpret this finding as indicative that a switch to plan-based action control allowed participants
 to largely skip the process of stimulus detection and encoding;
-instead, during the RSI, they already prepare a response that is executed as soon as something appears on the screen.
+instead, during the RSI, they already prepared a response that was executed as soon as something appeared on the screen.
 
-(ref:nondecision-time-cap) Nondecision times, separated by stimulus-location regularity. Error bars represent $2\cdot\mathit{SE}$.
+(ref:nondecision-time-cap) Nondecision times, separated by stimulus-location regularity. Points represent posterior means of the group-level parameters $\mu^{(\theta)}_{kb}$.
+
 
 ```{r nondecision-time, fig.width = 12, fig.height = 4, fig.cap = "(ref:nondecision-time-cap)"}
 par(mfrow = c(1, 4))
 wesanderson::wes_palette("Zissou1", n = 3, type = "continuous") |> palette()
 
-plot_data <- lapply(models, get_plot_data, "theta")
-
 off <- Map(
-  f = function(data, main, plot_legend) {
-    apa_factorial_plot(
-      data = data
-      , id = "id"
-      , dv = "value"
-      , factors = c("block_pair", "term")
-      , dispersion = se2
-      , ylim = c(0, .5)
+  f = function(x, main, plot_legend) {
+    plot(
+      x
+      , pars = "theta"
       , main = main
-      , plot = c("points", "error_bars", "lines")
+      , xlab = "Block pair"
+      , ylab = expression("Nondecision time"~theta)
+      , ylim = c(0, .5)
       , args_points = list(bg = 1:3)
-      , args_error_bars = list(length = .02)
       , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+      , args_violins = list(border = 1:3)
     )
-    
   }
-  , data = plot_data
+  , x = models
   , main = main
-  , plot_legend = c(T, F, T, F)
+  , plot_legend = c(TRUE, FALSE, TRUE, FALSE)
 )
+
+
 ```
 
 #### Response competition
@@ -2120,6 +2082,7 @@ BFs
 ```
 
 We applied an extended diffusion model with an additional *response-competition* parameter reflecting differences in nondecision times between motor-regular and motor-nonregular responses.
+
 
 Figure\ \@ref(fig:response-competition) shows response-competition parameter estimates.
 For probabilistic materials, we found clear evidence for a response competition effect, 
@@ -2133,34 +2096,34 @@ but found evidence against such an effect if the sequence was revealed,
 
 
 
-(ref:response-competition-cap) Response-competition parameter $\xi$, capturing differences in nondecision time between motor-regular and motor-nonregular responses. Positive values imply faster responses for motor-regular responses. Error bars represent $2\cdot\mathit{SE}$
-
+(ref:response-competition-cap) Response-competition parameter $\xi$, capturing differences in nondecision time between motor-regular and motor-nonregular responses. Positive values imply faster responses for motor-regular responses.  Points represent posterior means of the group-level parameters $\mu^{(\xi)}_{kb}$.
 
 ```{r response-competition, fig.width = 12, fig.height = 4, fig.cap = "(ref:response-competition-cap)"}
 par(las = 1, font.main = 1, mfrow = c(1, 4))
-palette(
-  wesanderson::wes_palette("Zissou1", n = 3, type = "continuous")
-  # palette.colors(palette = "R4", alpha = .5)
+wesanderson::wes_palette("Zissou1", n = 3, type = "continuous") |> palette()
+
+off <- Map(
+  f = function(x, main, plot_legend) {
+    plot(
+      x
+      , pars = "xi"
+      , main = main
+      , xlab = "Block pair"
+      , ylab = expression("Response competition"~xi~ "[ms]")
+      , ylim = c(-0.030, 0.030)
+      , args_y_axis = list(at = seq(-.03, .03, .01), labels = seq(-.03, .03, .01) * 1000)
+      , args_points = list(bg = 1:3)
+      , args_violins = list(border = 1:3)
+      , args_legend = list(x = "topleft", title = "", plot = plot_legend)
+    )
+    abline(lty = "dashed", col = "grey50", h = 0)
+  }
+  , x = models
+  , main = main
+  , plot_legend = FALSE
 )
 
-for (i in seq_along(models)) {
-  colors <- 2
-  plot(
-    models[[i]]
-    , pars = "xi"
-    , args_points = list(bg = colors)
-    , args_swarm = list(cex = .002, bg = colors, lwd = 0, pch = 21)
-    , ylim = c(-0.030, 0.030)
-    , args_y_axis = list(at = seq(-.03, .03, .01), labels = seq(-.03, .03, .01) * 1000)
-    , xlab = "Block pair"
-    , ylab = expression("Response competition"~xi~ "[ms]")
-    , main = main[i]
-    , dispersion = se2
-    , args_error_bars = list(length = .02)
-    , plot = c("points", "error_bars", "lines")
-  )
-  abline(lty = "dashed", col = "grey50", h = 0)
-}
+
 ```
 
 
@@ -2183,37 +2146,39 @@ classified as being implicit about the sequence also showed an above-zero respon
 These findings demonstrate that the presence of explicit knowledge *per se* does not necessarily affect performance.
 Participants also need the opportunity, afforded by the deterministic blocks, to express that knowledge in a plan-based manner.
 
-To characterize the expression of implicit sequence knowledge, we used the parameter estimates from the group who worked on probabilistic materials in the sequence concealed condition and did not show any indication of explicit knowledge (i.e., the *implicit* subgroup). 
+To characterize the expression of implicit sequence knowledge, we used the parameter estimates from the group that worked on probabilistic materials in the sequence concealed condition and did not show any indication of explicit knowledge (i.e., the *implicit* subgroup). 
 These participants could only perform the task in a stimulus-based manner.
 The left panels of Figure\ \@ref(fig:compare-implicit-explicit) show parameter estimates for this subgroup.
 In line with our whole-sample results,
-if the SRTT is performed in a stimulus-based fashion and participants remained implicit about the sequence,
-such implicit learning affects the response-selection process, with a tendency to select the rule-adhering response (starting point $\beta$), and faster evidence accumulation for rule-adhering stimuli (drift rate $\delta$). 
-We found no effect of stimulus regularity on nondecision time $\theta$,
-but a robust effect of motor regularity (response competition $\xi$).
+if the SRTT was performed in a stimulus-based fashion and participants remained implicit about the sequence,
+such implicit learning affected the response-selection process, with a tendency to select the rule-adhering response (starting point $\beta$), and faster evidence accumulation for rule-adhering stimuli (drift rate $\delta$). 
+We found no effect of stimulus regularity on nondecision time\ $\theta$,
+but a robust effect of motor regularity (response competition\ $\xi$).
 
 To characterize the expression of explicit knowledge, we used the parameter estimates from the group of participants who worked on mixed-deterministic materials, received full advance sequence knowledge, and were able to report the complete sequence at the end of the experiment. 
 These participants most likely performed the task in a plan-based fashion.
 The right panels of Figure\ \@ref(fig:compare-implicit-explicit) show parameter estimates for this subgroup.
 <!-- Contrasting the above results, for participants who performed the SRTT in a plan-based fashion and were fully explicit, -->
 <!-- we did not find any difference in model parameters between regular and nonregular trials within random blocks. -->
-Plan-based action control in deterministic blocks was reflected in an anticipation of the next response (starting point $beta$), indicating that response selection is almost completed when the stimulus appears on the screen.
-Evidence accumulation from the stimulus (drift rate $\delta$) was not affected by a switch to plan-based action control,
-indicating that in such a processing mode, the little information that is necessary to select the response (i.e., the appearance of a stimulus on the screen) is processed as efficiently as in random blocks.
-Nondecision time $\theta$ was dramatically reduced in deterministic blocks (compared with random blocks),
-indicating that stimulus detection and/or encoding can be bypassed.
-Participants were also able to use their performance advantage to respond more cautiously in deterministic versus random blocks (boundary separation $\alpha$).
+Plan-based action control in deterministic blocks was reflected in an anticipation of the next response (starting point $\beta$), indicating that response selection is almost completed when the stimulus appears on the screen.
+Evidence accumulation from the stimulus (drift rate\ $\delta$) was not affected by a switch to plan-based action control,
+indicating that in such a processing mode, the little information that was necessary to select the response (i.e., the appearance of a stimulus on the screen) was processed as efficiently as in random blocks.
+Nondecision time\ $\theta$ was dramatically reduced in deterministic blocks (compared with random blocks),
+indicating that stimulus detection and/or encoding could be bypassed.
+Participants were also able to use their performance advantage to respond more cautiously in deterministic versus random blocks (boundary separation\ $\alpha$).
 There was no effect of motor regularity on nondecision time (i.e., no response-competition effect).
 
 To summarize, implicit knowledge affected the drift rate as well as the starting point of the diffusion process, and also caused response competition.
 In contrast, expressing explicit knowledge in a plan-based fashion did not affect the drift rate; it was most prominently reflected in a decrease of nondecision time and an effect on the starting point.
-While the starting point was affected in both cases, implicit sequence knowledge selectively involved an effect on drift-rate, and plan-based expression of explicit knowledge selectively affected overall nondecision time.
+While the starting point was affected in both cases, implicit sequence knowledge selectively involved an effect on drift rate, and plan-based expression of explicit knowledge selectively affected overall nondecision time.
 
-(ref:ddm-parameters-subset) DDM parameters for stimulus-based (on the left) versus plan-based SRTT performance (on the right). Error bars represent $2\cdot\mathit{SE}$.
+(ref:ddm-parameters-subset) DDM parameters for stimulus-based (on the left) versus plan-based SRTT performance (on the right).
 
 ```{r compare-implicit-explicit, fig.width = 9, fig.height = 17, fig.align = 'center', results = 'hide', fig.cap = "(ref:ddm-parameters-subset)"}
 source(file.path(study_folder, "R", "model-analysis-by-criterion.R"), echo = FALSE)
+
 important_models <- models[c("probabilistic.sequence concealed.implicit", "mixed deterministic.sequence revealed.explicit")]
+main <- c("Stimulus-based, implicit", "Plan-based, explicit")
 
 parameter_names <- list(
   alpha   = expression("Boundary separation"~alpha)
@@ -2224,18 +2189,27 @@ parameter_names <- list(
 )
 ylim <- list(
   alpha     =  c(.4, 1.2)
-  , beta    =  c(0, 1)
+  , beta    =  c(0, 1.1)
     , nu    = c(2, 6)
-    , theta = c(0, .4)
+    , theta = c(0, .5)
     , xi    = c(-0.040, 0.040)
 )
+colors <- list(
+  alpha = c(5, 2)
+  , beta = c(1, 3, 5)
+  , nu = c(1, 3, 5)
+  , theta = c(1, 3, 5)
+  , xi = c(1, 3, 5)
+)
+
 
 palette(wesanderson::wes_palette("Zissou1", n = 5, type = "continuous"))
 
 se2 <- function(x, na.rm = TRUE) sd(x, na.rm = na.rm)
-par(mfrow = c(5, 2), font.main = 1, las = 1)
+par(mfrow = c(5, 2), font.main = 1, las = 1, xpd = TRUE)
 i <- "beta"
 j <- 1
+
 
 # plot_data <- lapply(important_models, FUN = pars = i)
 
@@ -2243,32 +2217,41 @@ j <- 1
 for (i in c("beta", "nu", "alpha", "theta", "xi")) {
   for (j in seq_along(important_models)) {
     is_deterministic <- grepl(names(important_models[j]), pattern = "determ")
+    if(is_deterministic) colors$alpha <- c(5, 2) else colors$alpha <- 2
     
-    plot_data <- get_plot_data(important_models[[j]], pars = i)
+    # plot_data <- get_plot_data(important_models[[j]], pars = i)
     colors <- c(1, 3, 5)
     if(i == "alpha")                    colors <- 2
-    if(i == "alpha" & is_deterministic) colors <- c(2, 5)
+    if(i == "alpha" & is_deterministic) colors <- c(5, 2)
     if(i == "xi")                       colors <- 2
     
-    apa_factorial_plot(
-      data = plot_data
-      , id = "id"
-      , dv = "value"
-      , factors = c("block_pair", "term")
-      , dispersion = se2
+    # apa_factorial_plot(
+    #   data = plot_data
+    #   , id = "id"
+    #   , dv = "value"
+    #   , factors = c("block_pair", "term")
+    #   , dispersion = se2
+    #   , ylim = ylim[[i]]
+    #   , main = if(i == "beta") { if(is_deterministic) "Plan-based, explicit" else "Stimulus-based, implicit" } else NULL
+    #   , plot = c("points", "violins", "lines")
+    #   , args_points  = list(bg = colors)
+    #   , args_violins = list(border = colors)
+    #   , args_error_bars = list(length = .02)
+    #   , args_legend = list(x = "topleft", title = "", plot = TRUE)
+    # )
+    plot(
+      important_models[[j]]
+      , pars = i
+      , main = if(i == "beta") { if(is_deterministic) "Plan-based, explicit" else "Stimulus-based, implicit" }
+      , xlab = "Block pair"
+      , ylab = parameter_names[[i]]
       , ylim = ylim[[i]]
-      , main = if(i == "beta") { if(is_deterministic) "Plan-based, explicit" else "Stimulus-based, implicit" } else NULL
-      , plot = c("points", "error_bars", "lines")
       , args_points = list(bg = colors)
+      , args_legend = list(x = "topleft", title = "")
+      , args_violins = list(border = colors)
       , args_error_bars = list(length = .02)
-      , args_legend = list(x = "topleft", title = "", plot = TRUE)
     )
 
-
-    
-    if(i == "beta") {
-      abline(h = c(0, 1), lty = "dashed", col = "grey50")
-    }
     if(i == "xi") {
       abline(h = 0, lty = "dashed", col = "grey50")
     }

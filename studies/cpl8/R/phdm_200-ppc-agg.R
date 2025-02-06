@@ -1,10 +1,14 @@
 
-
 library(cplmodels)
+library(qs)
+library(parallel)
 
-readRDS(file = "studies/cpl8/model_objects/phdm_200-pp.rds") |>
-  lapply(FUN = function(x) {
+cl <- makeForkCluster(nnodes = 4L)
+
+qread(file = "studies/cpl8/model_objects/phdm_200-pp.qs") |>
+  parLapply(cl = cl, fun = function(x) {
     ppc(x, factors = unique(unlist(x$factors)), breaks = seq(0.05, .95, .05))
   }) |>
-  saveRDS(file = "studies/cpl8/model_objects/phdm_200-ppc-agg.rds")
+  qsave(file = "studies/cpl8/model_objects/phdm_200-ppc-agg.qs")
 
+stopCluster(cl)

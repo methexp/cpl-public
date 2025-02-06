@@ -6,22 +6,7 @@ output: html_document
 
 # Model specification {#appendix-model-specification}
 
-<!--
-seven-parameter diffusion model
-with inter-trial variabilities for drift rate, starting point, and nondecision time.
-Intertrial variabilities varied by participant (except for beta)
--->
-<!--
-- $n$ trials
-- $i$ participants
-- $j$ stimulus location
-- $k$ regular/nonregular/deterministic
-- $l$ response location
-- $b$ block pair
-- $m$ function index
--->
-
-We implemented the drift-diffusion model in JAGS [@plummer_jags_2003].
+We implemented the drift-diffusion model in JAGS [@plummer_jags_2003] and fit the model to each between-subjects condition, separately.
 Response times and accuracy on each trial $n$ were modeled as coming from a Wiener distribution with
 the models' *core* parameters
 boundary separation $\alpha_{ik^*b}$, starting point $\beta_n$, drift rate $\delta_n$ and nondecision time $\tau_n$
@@ -51,8 +36,6 @@ and $\kappa_{ij}$ represent an individual's stimulus-location-dependent deviatio
 
 Participant-level parameters $\zeta_{ikb}$ are assumed to be normally distributed, e.g.
 
-<!-- $$\zeta_{ikb}^{(\beta)} \sim \mathrm{N} \left( \mu_{kb}^{(\beta)}, \sigma^{(\beta)} \right)$$ -->
-
 $$\zeta_{ikb}^{(\beta)} \sim \mathrm{N} \left( \mu_{kb}^{(\beta)}, \sigma^{(\beta)} \right)$$
 
 where 
@@ -79,7 +62,7 @@ and
 
 $$\kappa_{i6}^{(\beta)} = - \sum_{j = 1}^{5} \kappa_{ij}^{(\beta)}$$
 
-The
+The means of these parameters are modeled as being normally distributed, where
 
 $$\mu_j^{\kappa^{(\beta)}} \sim \mathrm{N}\left(0, 1\right)~\mathrm{for}~j = 1, ..., 5$$
 
@@ -106,15 +89,28 @@ $$\mu_{kb} = \sum_{m = 1}^3 w_{km} f_m(b)_{\lambda_m, \gamma_m, \upsilon_m, \iot
 
 <!-- and t $\psi^{(\beta)}_m$ is the average difference between initial and final limit. -->
 
-We use these functions in a similar fashion as model terms in linear models:
+```{r results = 'asis'}
+if(is.null(params$coding)) {
+  cat("We use these functions in a similar fashion as model terms in linear models:
 Condition means are the weighted sum of multiple temporally-changing functions (instead of regression coefficients),
 and the condition weights $w_{km}$ chosen in a way that
 the first function is equivalent to an intercept term,
 the second function is equivalent to the effect of regular vs. nonregular trials, and
 the third function is equivalent to the effect of deterministic trials vs. the average of regular and nonregular trials;
-amounting to a Helmert coding scheme.
+amounting to a Helmert coding scheme.")
+} else {
+  cat("We use these functions in a similar fashion as model terms in linear models:
+Condition means are the weighted sum of multiple temporally-changing functions (instead of regression coefficients),
+and the condition weights $w_{km}$ chosen in a way that conditions means are dummy coded (with nonregular trials serving as the reference group).")
+}
 
-The functions are defined as
+```
+
+
+
+
+
+The functions (depicted in Figure\ \@ref(fig:stretched-exponential)) are defined as
 
 $$f_m(b) = \upsilon_m + (\iota_m - \upsilon_m) e^{-(\frac{b}{\lambda_m})^{-\gamma_m}}$$
 
@@ -138,9 +134,9 @@ and the effect of deterministic vs. random blocks (third function).
 Bayes Factors ($\mathit{BF}$) are calculated using the Savage-Dickey density ratio [@wagenmakers_bayesian_2010]
 from logspline densities [@kooperberg_logspline_1992].
 
-(ref:exponential-functions) Left panel: Shifted and stretched exponential functions for different values of $\lambda$ (location) and $\gamma$ (shape), with $\upsilon = 1$ and $\psi = \pm 1$. Right panel: The average effect $\psi$ corresponds to the area under the curve (blue) between initial limit and the function's value $f(b)$.
+(ref:exponential-functions) Left panel: Shifted and stretched exponential functions for different values of $\lambda$ (location) and $\gamma$ (shape), with $\upsilon = 1$ and $\iota \in \{0, 2\}$. Right panel: The average effect $\psi$ corresponds to the area under the curve (blue) between initial limit and the function's value $f(b)$.
 
-```{r echo = FALSE, fig.env="figure", fig.width = 9, fig.height = 4, fig.cap = "(ref:exponential-functions)"}
+```{r stretched-exponential, echo = FALSE, fig.env="figure", fig.width = 9, fig.height = 4, fig.cap = "(ref:exponential-functions)"}
 par(mfrow = c(1, 2), las = 1)
 b <- seq(1, 7, .1)
 
